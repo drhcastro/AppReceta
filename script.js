@@ -191,13 +191,13 @@ function calculateAge(dobString) {
 function displayMedications(data) {
     const container = document.getElementById('medication-list');
     const patientCode = localStorage.getItem('patientCode');
-    container.innerHTML = ''; // Limpiamos el contenedor
-    let medicationCount = 0; // <-- Añadimos un contador
+    
+    let allMedicationsHTML = []; // <-- Usaremos un array para juntar el HTML
+    let medicationCount = 0;
 
-    for (let i = 1; i <= 10; i++) { // Busca hasta 10 medicamentos
-        // Verificamos que la columna del nombre genérico exista y no esté vacía
+    for (let i = 1; i <= 10; i++) {
         if (data[`med${i}_generico`] && data[`med${i}_generico`].trim() !== '') {
-            medicationCount++; // <-- Incrementamos el contador
+            medicationCount++;
             const medId = `med${i}`;
             const med = {
                 generico: data[`med${i}_generico`],
@@ -232,6 +232,7 @@ function displayMedications(data) {
             const isSuspended = savedStatus === 'suspended' ? 'checked' : '';
             const cardStatusClass = savedStatus ? `status-${savedStatus}` : '';
 
+            // Creamos el HTML para esta tarjeta de medicamento
             const medicationHTML = `
                 <article class="medication-item card ${cardStatusClass}" id="${medId}">
                     <div class="medication-header">
@@ -248,7 +249,6 @@ function displayMedications(data) {
                     </div>
                     <p><strong>Duración:</strong> ${med.duracion || 'N/A'} días</p>
                     <p><strong>Indicaciones Especiales:</strong> ${med.indicaciones || 'Ninguna'}</p>
-
                     <div class="progress-tracker">
                         <strong>Avance del tratamiento (días):</strong>
                         <div class="progress-checks">${progressChecksHTML}</div>
@@ -262,18 +262,22 @@ function displayMedications(data) {
                     </div>
                 </article>
             `;
-            container.innerHTML += medicationHTML;
+            // Añadimos el HTML de esta tarjeta al array
+            allMedicationsHTML.push(medicationHTML);
         }
     }
 
-    // --- ESTA ES LA PARTE NUEVA E IMPORTANTE ---
-    // Después de revisar todos los medicamentos, si el contador es 0, mostramos el mensaje.
+    // Al final, decidimos qué mostrar
     if (medicationCount === 0) {
+        // Si no hay medicamentos, muestra el mensaje
         container.innerHTML = `
             <div class="card">
                 <p>No hay medicamentos indicados por el momento.</p>
             </div>
         `;
+    } else {
+        // Si hay medicamentos, une todo el HTML del array y lo inserta de una sola vez
+        container.innerHTML = allMedicationsHTML.join('');
     }
 }
 
