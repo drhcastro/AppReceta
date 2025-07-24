@@ -191,16 +191,18 @@ function calculateAge(dobString) {
 function displayMedications(data) {
     const container = document.getElementById('medication-list');
     const patientCode = localStorage.getItem('patientCode');
-    container.innerHTML = '';
-    
+    container.innerHTML = ''; // Limpiamos el contenedor
+    let medicationCount = 0; // <-- Añadimos un contador
+
     for (let i = 1; i <= 10; i++) { // Busca hasta 10 medicamentos
+        // Verificamos que la columna del nombre genérico exista y no esté vacía
         if (data[`med${i}_generico`] && data[`med${i}_generico`].trim() !== '') {
+            medicationCount++; // <-- Incrementamos el contador
             const medId = `med${i}`;
             const med = {
                 generico: data[`med${i}_generico`],
                 comercial: data[`med${i}_comercial`],
                 duracion: data[`med${i}_duracion`],
-                // ... (el resto de los campos que ya tenías)
                 presentacion: data[`med${i}_presentacion`],
                 concentracion: data[`med${i}_concentracion`],
                 surtir: data[`med${i}_surtir`],
@@ -211,7 +213,6 @@ function displayMedications(data) {
                 fecha_indicacion: data[`med${i}_fecha_indicacion`]
             };
 
-            // --- LÓGICA PARA CARGAR PROGRESO ---
             const savedProgress = JSON.parse(localStorage.getItem(`${patientCode}_${medId}_progress`)) || {};
             const savedStatus = localStorage.getItem(`${patientCode}_${medId}_status`);
             
@@ -263,6 +264,16 @@ function displayMedications(data) {
             `;
             container.innerHTML += medicationHTML;
         }
+    }
+
+    // --- ESTA ES LA PARTE NUEVA E IMPORTANTE ---
+    // Después de revisar todos los medicamentos, si el contador es 0, mostramos el mensaje.
+    if (medicationCount === 0) {
+        container.innerHTML = `
+            <div class="card">
+                <p>No hay medicamentos indicados por el momento.</p>
+            </div>
+        `;
     }
 }
 
