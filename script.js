@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // URL de tu Web App de Google Apps Script. ¡REEMPLAZA ESTO!
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFb_8Hf_zNt6P6YKAt6W5hlVLOx5m5cC4kCKnp-DaTYjxkcBcZUmMrhd87bdZqeD3sjA/exec';
+    // URL de tu Web App de Google Apps Script.
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFb_8Hf_zNt6P6YKAt6W5hlVLOx5m5cC4kCKnp-DaTYjxkcBcZUmMrhd87bdZqeD3sjA/exec'; // ¡ASEGÚRATE DE QUE ESTA URL SEA LA CORRECTA!
 
     // Elementos del DOM
     const loader = document.getElementById('loader');
@@ -29,16 +29,35 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('alarm-sidebar').addEventListener('change', (e) => {
         if (e.target.classList.contains('symptom') && e.target.checked) {
             const symptom = e.target.value;
-            logAlert('Sintoma de Alarma', symptom);
+            // CORRECCIÓN: Se pasa el tipo de alerta y el detalle a la función logAlert.
+            logAlert('Síntoma de Alarma', symptom);
             // Opcional: desmarcar después de un tiempo para evitar envíos múltiples
             setTimeout(() => { e.target.checked = false; }, 2000);
         }
     });
     
     // Botones de acción
-    document.getElementById('btn-meet').addEventListener('click', () => window.open('https://meet.google.com/', '_blank')); // URL genérica
-    document.getElementById('btn-drive').addEventListener('click', () => window.open(patientData.enlaceExpediente, '_blank'));
-    document.getElementById('btn-telegram').addEventListener('click', () => window.open(patientData.enlaceTelegram, '_blank'));
+    document.getElementById('btn-meet').addEventListener('click', () => {
+         // Antes de abrir, nos aseguramos que patientData existe
+        if (patientData && patientData.codigo) {
+            logAlert('Solicitud de Cita', 'El paciente hizo clic en el botón de Videoconsulta');
+        }
+        window.open('https://meet.google.com/', '_blank');
+    });
+    document.getElementById('btn-drive').addEventListener('click', () => {
+        if (patientData && patientData.enlaceExpediente) {
+            window.open(patientData.enlaceExpediente, '_blank');
+        } else {
+            alert('No hay un enlace de expediente configurado.');
+        }
+    });
+    document.getElementById('btn-telegram').addEventListener('click', () => {
+        if (patientData && patientData.enlaceTelegram) {
+            window.open(patientData.enlaceTelegram, '_blank');
+        } else {
+            alert('No hay un enlace de Telegram configurado.');
+        }
+    });
     document.getElementById('btn-payment').addEventListener('click', () => document.getElementById('payment-modal').style.display = 'flex');
     document.getElementById('btn-save-image').addEventListener('click', saveAsImage);
 
@@ -76,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Renderizar el panel principal con los datos del paciente
     function renderDashboard() {
-        // Información del header
         document.getElementById('patient-name').textContent = patientData.nombre;
         document.getElementById('patient-dob').textContent = formatDate(patientData.nacimiento);
         document.getElementById('patient-age').textContent = calculateAge(patientData.nacimiento);
@@ -84,24 +102,26 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('current-date').textContent = formatDate(new Date());
         
         const allergiesEl = document.getElementById('patient-allergies');
-        if (patientData.alergias && patientData.alergias.toLowerCase() !== 'negadas') {
+        if (patientData.alergias && patientData.alergias.toLowerCase() !== 'negadas' && patientData.alergias.trim() !== '') {
             allergiesEl.textContent = `ALERGIAS: ${patientData.alergias}`;
             allergiesEl.style.display = 'block';
         } else {
              allergiesEl.style.display = 'none';
         }
         
-        // Diagnóstico
         document.getElementById('patient-diagnosis').textContent = patientData.diagnostico;
-
-        // Renderizar medicamentos
         renderMedications();
     }
     
     // Renderizar la lista de medicamentos
     function renderMedications() {
         const container = document.getElementById('medications-container');
-        container.innerHTML = ''; // Limpiar contenedor
+        container.innerHTML = '';
+
+        if (!patientData.medicamentos || patientData.medicamentos.length === 0) {
+            container.innerHTML = '<p>No hay medicamentos indicados actualmente.</p>';
+            return;
+        }
 
         patientData.medicamentos.forEach((med, index) => {
             const medEl = document.createElement('div');
@@ -109,9 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let statusHTML = '';
             if (med.estado === 'terminado') {
-                statusHTML = '<span class="status-icon completed">✓</span>';
+                statusHTML = '<span class="status-icon completed">✓ Tratamiento Terminado</span>';
             } else if (med.estado === 'suspendido') {
-                statusHTML = '<span class="status-icon suspended">✗</span>';
+                statusHTML = '<span class="status-icon suspended">✗ Tratamiento Suspendido</span>';
             } else {
                 statusHTML = `
                     <div class="treatment-status">
@@ -147,59 +167,54 @@ document.addEventListener('DOMContentLoaded', () => {
             container.appendChild(medEl);
         });
 
-        // Añadir event listeners a los nuevos elementos
         addMedicationEventListeners();
     }
     
-    // Añadir event listeners para los controles de medicamentos
     function addMedicationEventListeners() {
-        // Selectores de día
         document.querySelectorAll('.day-selector').forEach(selector => {
             selector.addEventListener('click', handleDaySelection);
         });
-        // Botones de estado
         document.querySelectorAll('.status-btn').forEach(button => {
             button.addEventListener('click', handleStatusChange);
         });
     }
 
-    // Manejar selección de día de tratamiento
     function handleDaySelection(e) {
         const medIndex = e.target.parentElement.dataset.medIndex;
         const dayIndex = e.target.dataset.dayIndex;
         const med = patientData.medicamentos[medIndex];
         
-        // No permitir cambiar si el tratamiento ya terminó
         if (med.estado !== 'activo') return;
 
-        // Cambiar estado (tomado/no tomado)
         med.progreso[dayIndex] = med.progreso[dayIndex] === 1 ? 0 : 1;
         
-        updateMedicationData(); // Enviar actualización a la BD
-        e.target.classList.toggle('taken'); // Actualizar UI inmediatamente
+        updateMedicationData();
+        e.target.classList.toggle('taken');
     }
 
-    // Manejar cambio de estado del tratamiento (terminado/suspendido)
     function handleStatusChange(e) {
         const medIndex = e.target.dataset.medIndex;
         const newStatus = e.target.classList.contains('finish') ? 'terminado' : 'suspendido';
         const med = patientData.medicamentos[medIndex];
         
-        if (med.estado === newStatus) return; // Ya está en este estado
+        if (med.estado === newStatus) return;
         
         med.estado = newStatus;
         
-        updateMedicationData(); // Enviar actualización a la BD
+        updateMedicationData();
         
-        // Registrar alerta
         const alertType = newStatus === 'terminado' ? 'Tratamiento Terminado' : 'Tratamiento Suspendido';
         logAlert(alertType, med.nombreGenerico);
 
-        renderMedications(); // Re-renderizar para mostrar el nuevo estado
+        renderMedications();
     }
 
-    // Función para enviar actualización de medicamentos a Google Sheets
     function updateMedicationData() {
+        // CORRECCIÓN: Asegurarse de que patientData existe antes de enviar
+        if (!patientData || !patientData.codigo) {
+            console.error("No se pueden actualizar los datos del medicamento: datos del paciente no cargados.");
+            return;
+        }
         const payload = {
             action: 'updateMedications',
             code: patientData.codigo,
@@ -208,8 +223,15 @@ document.addEventListener('DOMContentLoaded', () => {
         postData(payload);
     }
     
-    // Función para registrar una alerta en Google Sheets
     function logAlert(type, detail) {
+        // CORRECCIÓN: La verificación más importante está aquí.
+        // Si no hay datos del paciente, no se puede registrar la alerta.
+        if (!patientData || !patientData.codigo) {
+            console.error("No se puede registrar la alerta: datos del paciente no cargados.");
+            // Opcional: informar al usuario que debe iniciar sesión primero.
+            alert("Por favor, inicie sesión para registrar una alerta.");
+            return;
+        }
         const payload = {
             action: 'logAlert',
             code: patientData.codigo,
@@ -217,24 +239,28 @@ document.addEventListener('DOMContentLoaded', () => {
             detail: detail
         };
         postData(payload);
-        // Opcional: mostrar una confirmación visual al usuario
         showToast(`Alerta enviada: ${detail}`);
     }
 
-    // Función genérica para enviar datos (POST) a Google Apps Script
     async function postData(payload) {
         try {
-            await fetch(SCRIPT_URL, {
+            const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
+                mode: 'cors', // Necesario para peticiones entre diferentes dominios (GitHub -> Google)
+                redirect: 'follow',
                 body: JSON.stringify(payload),
                 headers: { 'Content-Type': 'application/json' }
             });
+             if (!response.ok) {
+                throw new Error(`Error en la respuesta del servidor: ${response.statusText}`);
+            }
+            console.log('Datos enviados con éxito:', payload.action);
         } catch (error) {
             console.error('Error al enviar datos:', error);
+            // Este es el mensaje que el usuario ve
             alert('No se pudo guardar el cambio. Revisa tu conexión a internet.');
         }
     }
-
 
     // --- FUNCIONES AUXILIARES ---
 
@@ -243,6 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function calculateAge(dobString) {
+        if (!dobString) return "N/A";
         const birthDate = new Date(dobString);
         const today = new Date();
         let years = today.getFullYear() - birthDate.getFullYear();
@@ -259,8 +286,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${years} años, ${months} meses y ${days} días`;
     }
 
-    function formatDate(date) {
-        return new Date(date).toLocaleDateString('es-MX', {
+    function formatDate(dateString) {
+        if (!dateString) return "N/A";
+        return new Date(dateString).toLocaleDateString('es-MX', {
             year: 'numeric', month: 'long', day: 'numeric'
         });
     }
@@ -268,23 +296,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function copyClabe() {
         const clabeInput = document.getElementById('clabe-number');
         clabeInput.select();
-        clabeInput.setSelectionRange(0, 99999); // Para móviles
-        navigator.clipboard.writeText(clabeInput.value).then(() => {
+        clabeInput.setSelectionRange(0, 99999);
+        try {
+            navigator.clipboard.writeText(clabeInput.value);
             showToast('¡CLABE copiada al portapapeles!');
-        }, () => {
+        } catch (err) {
             showToast('Error al copiar. Por favor, hazlo manualmente.');
-        });
+        }
     }
 
     function saveAsImage() {
         showLoader(true);
         const elementToCapture = document.getElementById('main-content');
         html2canvas(elementToCapture, {
-            useCORS: true, // Necesario para cargar imágenes de otros dominios
-            scale: 2 // Mejora la calidad de la imagen
+            useCORS: true,
+            scale: 2
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `Avance-AppReceta-${new Date().toISOString().slice(0,10)}.png`;
+            const patientName = patientData ? patientData.nombre.replace(/\s+/g, '_') : 'paciente';
+            link.download = `Avance-AppReceta-${patientName}-${new Date().toISOString().slice(0,10)}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
             showLoader(false);
@@ -300,21 +330,18 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.className = 'toast';
         toast.textContent = message;
         document.body.appendChild(toast);
-        // Añade la clase para mostrarlo
         setTimeout(() => toast.classList.add('show'), 10);
-        // Oculta y elimina el toast después de 3 segundos
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => document.body.removeChild(toast), 500);
         }, 3000);
     }
     
-    // CSS para el Toast (añadido dinámicamente)
     const style = document.createElement('style');
     style.textContent = `
         .toast {
             position: fixed;
-            bottom: 20px;
+            bottom: -50px; /* Inicia fuera de la pantalla */
             left: 50%;
             transform: translateX(-50%);
             background-color: #333;
@@ -323,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
             border-radius: 25px;
             z-index: 1001;
             opacity: 0;
-            transition: opacity 0.5s, bottom 0.5s;
+            transition: opacity 0.4s ease, bottom 0.4s ease;
         }
         .toast.show {
             opacity: 1;
@@ -332,10 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.head.appendChild(style);
 
-
     // --- INICIALIZACIÓN DE LA APP ---
-
-    // Service Worker para PWA
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js').then(registration => {
