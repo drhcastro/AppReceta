@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // URL de tu Web App de Google Apps Script.
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFb_8Hf_zNt6P6YKAt6W5hlVLOx5m5cC4kCKnp-DaTYjxkcBcZUmMrhd87bdZqeD3sjA/exec'; // ¡ASEGÚRATE DE QUE ESTA URL SEA LA CORRECTA!
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxhn7iZtecPB1vqMYQ2Z6tBLBJkBaF4YVLZeVE65x2-NDtwhApeeoppc2BGWe5E2sSWmg/exec';' // ¡ASEGÚRATE DE QUE ESTA URL SEA LA CORRECTA!
 
     // Elementos del DOM
     const loader = document.getElementById('loader');
