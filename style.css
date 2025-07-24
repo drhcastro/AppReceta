@@ -160,7 +160,7 @@ body {
     color: var(--primary-color);
 }
 
-/* --- Seguimiento de Progreso --- */
+/* --- Seguimiento de Progreso (CORREGIDO) --- */
 .progress-tracker {
     margin: 20px 0;
 }
@@ -170,7 +170,10 @@ body {
     gap: 6px;
     padding: 10px 0;
 }
-.progress-checks label {
+.progress-checks label { /* La etiqueta solo sirve para hacer clic */
+    cursor: pointer;
+}
+.progress-checks span { /* El SPAN es el círculo visual */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -178,39 +181,58 @@ body {
     height: 32px;
     border: 2px solid #ccc;
     border-radius: 50%;
-    cursor: pointer;
     font-size: 0.8em;
     font-weight: 600;
     transition: all 0.2s;
 }
 .progress-checks input {
-    display: none;
+    display: none; /* Ocultamos el checkbox real */
 }
-.progress-checks input:checked + span {
+.progress-checks input:checked + span { /* Al chequear, el SPAN (círculo) cambia */
     background-color: var(--success-color);
     color: white;
     border-color: var(--success-color);
     transform: scale(1.1);
 }
+
+/* --- Estado del Tratamiento (CORREGIDO) --- */
 .treatment-status {
     margin-top: 15px;
     font-size: 1.1em;
 }
 .treatment-status label {
-    margin-right: 20px;
+    margin-right: 15px;
     cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
 }
 .treatment-status input {
-    display: none;
+    display: none; /* Ocultamos el radio button real */
 }
-input#status-finished:checked ~ label[for="status-finished"] {
-    color: var(--success-color);
+/* Estilo para la etiqueta cuando su radio button está seleccionado */
+input[id^="status_finished"]:checked ~ label[for^="status_finished"] {
+    background-color: var(--success-color);
+    color: white;
     font-weight: 700;
 }
-input#status-suspended:checked ~ label[for="status-suspended"] {
-    color: var(--danger-color);
+input[id^="status_suspended"]:checked ~ label[for^="status_suspended"] {
+    background-color: var(--danger-color);
+    color: white;
     font-weight: 700;
 }
+
+/* Estilo para TODA la tarjeta del medicamento */
+.medication-item.status-finished {
+    border-left: 6px solid var(--success-color);
+    background-color: #f7fff7;
+}
+.medication-item.status-suspended {
+    border-left: 6px solid var(--danger-color);
+    background-color: #fff5f5;
+}
+
 
 /* --- Botones de Acción --- */
 .button-grid {
