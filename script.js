@@ -100,6 +100,44 @@ function calculateAge(dobString) {
         months += 12;
     }
     return `${years} años, ${months} meses y ${days} días`;
+}function calculateAge(dobString) {
+    // Asegurarse de que el formato es DD/MM/AAAA y es una fecha válida.
+    const parts = dobString.split('/');
+    if (parts.length !== 3 || parts[0].length > 2 || parts[1].length > 2 || parts[2].length !== 4) {
+        return 'Formato de fecha inválido';
+    }
+
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Mes en JS es 0-indexado (0=Enero, 11=Diciembre)
+    const year = parseInt(parts[2], 10);
+
+    const dob = new Date(year, month, day);
+
+    // Verificación adicional para fechas inválidas (ej. 31/02/2024)
+    if (dob.getFullYear() !== year || dob.getMonth() !== month || dob.getDate() !== day) {
+        return "Fecha inexistente.";
+    }
+
+    const today = new Date();
+    
+    let ageYears = today.getFullYear() - dob.getFullYear();
+    let ageMonths = today.getMonth() - dob.getMonth();
+    let ageDays = today.getDate() - dob.getDate();
+
+    // Ajustar si el día actual es menor que el día de nacimiento
+    if (ageDays < 0) {
+        ageMonths--;
+        // new Date(año, mes, 0) nos da el último día del mes anterior
+        ageDays += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    }
+
+    // Ajustar si el mes actual es menor que el mes de nacimiento
+    if (ageMonths < 0) {
+        ageYears--;
+        ageMonths += 12;
+    }
+
+    return `${ageYears} años, ${ageMonths} meses y ${ageDays} días`;
 }
 
 function displayMedications(data) {
