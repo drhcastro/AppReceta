@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realizar Pago - AppReceta</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="app-header">
+        <img src="https://i.ibb.co/ns9sT96c/Logo-julio-20250712-140428-0000.png" alt="Logo" class="logo-small">
+        <h1>Información de Pago</h1>
+    </header>
+
+    <main class="container">
+        <div class="card payment-card">
+            <p>Puedes realizar tu pago mediante transferencia electrónica.</p>
+            <img src="https://i.ibb.co/39bpnxbf/datos-de-pago.png" alt="Datos de pago" class="payment-image">
+            
+            <div class="clabe-section">
+                <p><strong>Cuenta CLABE:</strong></p>
+                <span id="clabeNumber">728969000048467264</span>
+                <button id="copyButton">Copiar</button>
+            </div>
+            <p id="copyMessage" style="display:none;">¡Número copiado!</p>
+            <br>
+            <a href="app.html" class="back-link">Volver al seguimiento</a>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('copyButton').addEventListener('click', function() {
+            const clabeNumber = document.getElementById('clabeNumber').innerText;
+            navigator.clipboard.writeText(clabeNumber).then(() => {
+                const msg = document.getElementById('copyMessage');
+                msg.style.display = 'block';
+                setTimeout(() => { msg.style.display = 'none'; }, 2000);
+            }).catch(err => {
+                console.error('Error al copiar: ', err);
+            });
+        });
+    </script>
+</body>
+</html>

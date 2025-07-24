@@ -3,127 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AppReceta</title>
+    <title>Bienvenido a AppReceta</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png" type="image/png">
-    <meta name="theme-color" content="#4A90E2"/>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
-
-    <div id="loader" class="loader-container" style="display: none;">
-        <div class="loader"></div>
+    <div class="login-container">
+        <img src="https://i.ibb.co/ns9sT96c/Logo-julio-20250712-140428-0000.png" alt="Logo AppReceta" class="logo">
+        <h1>AppReceta</h1>
+        <p>Ingresa tu código de paciente para continuar</p>
+        <form id="loginForm">
+            <input type="text" id="patientCode" placeholder="Código Único" required>
+            <button type="submit">Acceder</button>
+        </form>
+        <p id="errorMessage" class="error-message"></p>
     </div>
 
-    <div id="login-view">
-        <div class="login-container">
-            <img src="https://i.ibb.co/ns9sT96c/Logo-julio-20250712-140428-0000.png" alt="Logo AppReceta" class="logo">
-            <h1>AppReceta</h1>
-            <p>Ingrese su código de paciente para continuar.</p>
-            <form id="login-form">
-                <input type="text" id="patient-code" placeholder="Código Único" required>
-                <button type="submit">Ingresar</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="dashboard-view" style="display:none;">
-        <div id="main-content">
-            <header class="patient-header">
-                <h2 id="patient-name"></h2>
-                <div class="patient-details">
-                    <p><strong>Nacimiento:</strong> <span id="patient-dob"></span></p>
-                    <p><strong>Edad:</strong> <span id="patient-age"></span></p>
-                    <p><strong>Peso:</strong> <span id="patient-weight"></span></p>
-                    <p><strong>Fecha Actual:</strong> <span id="current-date"></span></p>
-                    <p id="patient-allergies" class="allergies"></p>
-                </div>
-            </header>
-
-            <section class="card">
-                <h3>Diagnóstico</h3>
-                <p id="patient-diagnosis"></p>
-            </section>
-
-            <section class="card">
-                <h3>Tratamiento Indicado</h3>
-                <div id="medications-container">
-                    </div>
-            </section>
-
-             <div class="action-buttons-grid">
-                <button id="btn-meet" class="action-btn">📞 Videoconsulta Urgente</button>
-                <button id="btn-drive" class="action-btn">📂 Ver Expediente</button>
-                <button id="btn-telegram" class="action-btn">💬 Pregunta a tu Médico</button>
-                <button id="btn-payment" class="action-btn">💳 Realizar Pago</button>
-                <button id="btn-save-image" class="action-btn">🖼️ Guardar Avance en Imagen</button>
-            </div>
-             <img src="https://i.ibb.co/whmzyCyq/Logo-julio-20250711-122010-0004.png" alt="Redes Sociales" class="social-logo">
-        </div>
-
-        <div id="alarm-sidebar">
-            <h3>Síntomas de Alarma</h3>
-            <div class="symptom-group">
-                <h4>Respiratorios</h4>
-                <label><input type="checkbox" class="symptom" value="Respira con dificultad"> Respira con dificultad</label>
-                <label><input type="checkbox" class="symptom" value="Respiración rápida"> Respiración rápida</label>
-                <label><input type="checkbox" class="symptom" value="Coloración morada"> Coloración morada</label>
-                <label><input type="checkbox" class="symptom" value="Silbido al respirar"> Silbido al respirar</label>
-                <label><input type="checkbox" class="symptom" value="Saturación < 92%"> Saturación < 92%</label>
-                <label><input type="checkbox" class="symptom" value="Sangrado nasal"> Sangrado nasal</label>
-                <label><input type="checkbox" class="symptom" value="Tos nocturna intensa"> Tos nocturna intensa</label>
-                <label><input type="checkbox" class="symptom" value="Estridor / Tos de foca"> Estridor / Tos de foca</label>
-                <label><input type="checkbox" class="symptom" value="Otro (Respiratorio)"> Otro</label>
-            </div>
-            <div class="symptom-group">
-                <h4>Digestivos</h4>
-                <label><input type="checkbox" class="symptom" value="Vómito"> Vómito</label>
-                <label><input type="checkbox" class="symptom" value="Más de 4 evacuaciones en 1 hora"> >4 evacuaciones/hr</label>
-                <label><input type="checkbox" class="symptom" value="Diarrea abundante"> Diarrea abundante</label>
-                <label><input type="checkbox" class="symptom" value="Sangrado digestivo"> Sangrado</label>
-                <label><input type="checkbox" class="symptom" value="No come nada"> No come nada</label>
-                <label><input type="checkbox" class="symptom" value="Cólico intenso"> Cólico intenso</label>
-            </div>
-            <div class="symptom-group">
-                <h4>Otros</h4>
-                <label><input type="checkbox" class="symptom" value="Fiebre > 37.6°C"> Fiebre > 37.6°C</label>
-                <label><input type="checkbox" class="symptom" value="Lagañas"> Lagañas</label>
-                <label><input type="checkbox" class="symptom" value="Sangrado (Otro)"> Sangrado</label>
-                <label><input type="checkbox" class="symptom" value="Dolor"> Dolor</label>
-                <label><input type="checkbox" class="symptom" value="No despierta / No se mueve"> No despierta/mueve</label>
-                <label><input type="checkbox" class="symptom" value="No respira"> No respira</label>
-                <label><input type="checkbox" class="symptom" value="Convulsiona"> Convulsiona</label>
-                <label><input type="checkbox" class="symptom" value="Sarpullido"> Sarpullido</label>
-            </div>
-            <div class="symptom-group">
-                <h4>Medicamentos</h4>
-                <label><input type="checkbox" class="symptom" value="Le di más dosis"> Le di más dosis</label>
-                <label><input type="checkbox" class="symptom" value="Tomó otro medicamento"> Tomó otro medicamento</label>
-            </div>
-        </div>
-    </div>
-
-     <div id="payment-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Datos para realizar el pago</h2>
-            <img src="https://i.ibb.co/39bpnxbf/datos-de-pago.png" alt="Datos de pago" style="max-width: 100%; border-radius: 8px;">
-            <div class="clabe-container">
-                <p>Cuenta CLABE:</p>
-                <input type="text" value="728969000048467264" id="clabe-number" readonly>
-                <button id="copy-clabe">Copiar</button>
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        <p><strong>Dr. Héctor Castro</strong></p>
-        <p class="footer-details"><em>Rehabilitación Orofacial Miofuncional, Terapia de deglución, Respiración oral, Disfagia, Alimentación complementaria, Problemas relacionados con alimentación, Seguimiento neurodesarrollo, vacuna para todas las edades.</em></p>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const code = document.getElementById('patientCode').value.trim().toUpperCase();
+            if (code) {
+                // Guardamos el código en el almacenamiento local para usarlo en la siguiente página
+                localStorage.setItem('patientCode', code);
+                window.location.href = 'app.html';
+            }
+        });
+    </script>
 </body>
 </html>

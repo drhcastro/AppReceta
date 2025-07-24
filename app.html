@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento - AppReceta</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png" type="image/png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+    <header class="app-header">
+        <img src="https://i.ibb.co/ns9sT96c/Logo-julio-20250712-140428-0000.png" alt="Logo" class="logo-small">
+        <h1>Seguimiento de Tratamiento</h1>
+    </header>
+
+    <main id="app-content" class="container">
+        <div id="loader">Cargando datos del paciente...</div>
+
+        <section id="patient-info" class="card" style="display:none;">
+            <h2 id="patient-name"></h2>
+            <p><strong>Fecha de Nacimiento:</strong> <span id="patient-dob"></span></p>
+            <p><strong>Edad:</strong> <span id="patient-age"></span></p>
+            <p><strong>Peso:</strong> <span id="patient-weight"></span></p>
+            <p><strong>Fecha Actual:</strong> <span id="current-date"></span></p>
+            <p id="patient-allergies" class="allergies"></p>
+        </section>
+
+        <section id="diagnosis-section" class="card" style="display:none;">
+            <h3>Diagnóstico</h3>
+            <p id="patient-diagnosis"></p>
+        </section>
+
+        <section id="medications-section">
+            <h3>Medicamentos Indicados</h3>
+            <div id="medication-list"></div>
+        </section>
+
+        <section id="action-buttons" class="card">
+            <h3>Acciones Rápidas</h3>
+            <div class="button-grid">
+                <a href="urgencia.html" class="action-button urgency">¿Tienes una Urgencia?</a>
+                <a id="expediente-btn" href="#" target="_blank" class="action-button">Ver Expediente</a>
+                <a id="telegram-btn" href="#" target="_blank" class="action-button">Chat Grupal (Telegram)</a>
+                <button id="save-image-btn" class="action-button">Guardar Avance en Imagen</button>
+                <a href="pago.html" class="action-button payment">Realizar Pago</a>
+            </div>
+        </section>
+        
+    </main>
+
+    <footer class="app-footer">
+        <img src="https://i.ibb.co/whmzyCyq/Logo-julio-20250711-122010-0004.png" alt="Redes Sociales" class="social-logo">
+        <p><strong>Dr. Héctor Castro</strong></p>
+        <p class="footer-details"><em>Rehabilitación Orofacial Miofuncional, Terapia de deglución, Respiración oral, Disfagia, Alimentación complementaria, Problemas relacionados con alimentación, Seguimiento neurodesarrollo, vacunas para todas las edades.</em></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
