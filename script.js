@@ -105,7 +105,55 @@ function calculateAge(dobString) {
     const parts = dobString.split('/');
     if (parts.length !== 3 || parts[0].length > 2 || parts[1].length > 2 || parts[2].length !== 4) {
         return 'Formato de fecha inválido';
+    }function calculateAge(dobString) {
+    if (!dobString || typeof dobString !== 'string') {
+        return 'Fecha no proporcionada.';
     }
+
+    // Limpia la fecha de espacios y usa '/' o '-' como separador
+    const cleanedDobString = dobString.trim();
+    const parts = cleanedDobString.split(/[/|-]/);
+
+    if (parts.length !== 3) {
+        return 'Formato de fecha inválido.';
+    }
+
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Mes en JS es 0-indexado
+    const year = parseInt(parts[2], 10);
+
+    if (isNaN(day) || isNaN(month) || isNaN(year)) {
+        return 'Fecha contiene caracteres no válidos.';
+    }
+
+    const dob = new Date(year, month, day);
+
+    // Verificación final para fechas inválidas (ej. 31/02/2024)
+    if (dob.getFullYear() !== year || dob.getMonth() !== month || dob.getDate() !== day) {
+        return "La fecha no existe.";
+    }
+
+    const today = new Date();
+    if (dob > today) {
+        return "La fecha de nacimiento no puede ser en el futuro.";
+    }
+    
+    let ageYears = today.getFullYear() - dob.getFullYear();
+    let ageMonths = today.getMonth() - dob.getMonth();
+    let ageDays = today.getDate() - dob.getDate();
+
+    if (ageDays < 0) {
+        ageMonths--;
+        ageDays += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    }
+
+    if (ageMonths < 0) {
+        ageYears--;
+        ageMonths += 12;
+    }
+
+    return `${ageYears} años, ${ageMonths} meses y ${ageDays} días`;
+}
 
     const day = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10) - 1; // Mes en JS es 0-indexado (0=Enero, 11=Diciembre)
