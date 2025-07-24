@@ -190,37 +190,49 @@ function calculateAge(dobString) {
 
 function displayMedications(data) {
     const container = document.getElementById('medication-list');
+    const patientCode = localStorage.getItem('patientCode');
     container.innerHTML = '';
     
     for (let i = 1; i <= 10; i++) { // Busca hasta 10 medicamentos
         if (data[`med${i}_generico`] && data[`med${i}_generico`].trim() !== '') {
+            const medId = `med${i}`;
             const med = {
                 generico: data[`med${i}_generico`],
                 comercial: data[`med${i}_comercial`],
+                duracion: data[`med${i}_duracion`],
+                // ... (el resto de los campos que ya tenías)
                 presentacion: data[`med${i}_presentacion`],
                 concentracion: data[`med${i}_concentracion`],
                 surtir: data[`med${i}_surtir`],
                 via: data[`med${i}_via`],
                 dosis: data[`med${i}_dosis`],
                 frecuencia: data[`med${i}_frecuencia`],
-                duracion: data[`med${i}_duracion`],
                 indicaciones: data[`med${i}_indicaciones`],
                 fecha_indicacion: data[`med${i}_fecha_indicacion`]
             };
 
-            const duration = parseInt(med.duracion) || 0;
+            // --- LÓGICA PARA CARGAR PROGRESO ---
+            const savedProgress = JSON.parse(localStorage.getItem(`${patientCode}_${medId}_progress`)) || {};
+            const savedStatus = localStorage.getItem(`${patientCode}_${medId}_status`);
+            
             let progressChecksHTML = '';
+            const duration = parseInt(med.duracion) || 0;
             for (let day = 1; day <= duration; day++) {
+                const isChecked = savedProgress[day] ? 'checked' : '';
                 progressChecksHTML += `
                     <label>
-                        <input type="checkbox">
+                        <input type="checkbox" data-day="${day}" ${isChecked}>
                         <span>${day}</span>
                     </label>
                 `;
             }
 
+            const isFinished = savedStatus === 'finished' ? 'checked' : '';
+            const isSuspended = savedStatus === 'suspended' ? 'checked' : '';
+            const cardStatusClass = savedStatus ? `status-${savedStatus}` : '';
+
             const medicationHTML = `
-                <article class="medication-item card">
+                <article class="medication-item card ${cardStatusClass}" id="${medId}">
                     <div class="medication-header">
                         <h4>${med.generico} (${med.comercial || 'N/A'})</h4>
                         <small>Indicado el: ${med.fecha_indicacion || 'N/A'}</small>
@@ -242,9 +254,9 @@ function displayMedications(data) {
                     </div>
                     <div class="treatment-status">
                         <strong>Estado del Tratamiento:</strong>
-                        <input type="radio" name="status_med${i}" id="status_finished_${i}">
+                        <input type="radio" name="status_${medId}" id="status_finished_${i}" value="finished" ${isFinished}>
                         <label for="status_finished_${i}">✅ Terminado</label>
-                        <input type="radio" name="status_med${i}" id="status_suspended_${i}">
+                        <input type="radio" name="status_${medId}" id="status_suspended_${i}" value="suspended" ${isSuspended}>
                         <label for="status_suspended_${i}">❌ Suspendido</label>
                     </div>
                 </article>
@@ -285,22 +297,31 @@ function setupActionButtons(data) {
 }
 function setupDynamicEventListeners() {
     const medList = document.getElementById('medication-list');
-    if (!medList) return;
+    const patientCode = localStorage.getItem('patientCode');
+    if (!medList || !patientCode) return;
 
     medList.addEventListener('change', function(event) {
-        // Revisa si el cambio fue en un radio button de estado
-        if (event.target.type === 'radio' && event.target.name.startsWith('status_med')) {
-            const medicationCard = event.target.closest('.medication-item');
-            if (!medicationCard) return;
+        const medicationCard = event.target.closest('.medication-item');
+        if (!medicationCard) return;
+        const medId = medicationCard.id;
 
-            // Limpia clases de estado previas de la tarjeta
+        // --- GUARDAR PROGRESO DE DÍAS ---
+        if (event.target.type === 'checkbox') {
+            const day = event.target.dataset.day;
+            const progressKey = `${patientCode}_${medId}_progress`;
+            const savedProgress = JSON.parse(localStorage.getItem(progressKey)) || {};
+            savedProgress[day] = event.target.checked;
+            localStorage.setItem(progressKey, JSON.stringify(savedProgress));
+        }
+
+        // --- GUARDAR ESTADO DEL TRATAMIENTO ---
+        if (event.target.type === 'radio' && event.target.name.startsWith('status_')) {
+            const statusKey = `${patientCode}_${medId}_status`;
+            localStorage.setItem(statusKey, event.target.value);
+            
             medicationCard.classList.remove('status-finished', 'status-suspended');
-
-            // Añade la clase correcta a la tarjeta para el feedback visual
-            if (event.target.id.includes('finished')) {
-                medicationCard.classList.add('status-finished');
-            } else if (event.target.id.includes('suspended')) {
-                medicationCard.classList.add('status-suspended');
+            if (event.target.checked) {
+                medicationCard.classList.add(`status-${event.target.value}`);
             }
         }
     });
