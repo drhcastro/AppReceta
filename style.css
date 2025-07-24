@@ -1,0 +1,370 @@
+/* Estilos Generales y Resets */
+:root {
+    --primary-color: #4A90E2;
+    --secondary-color: #50E3C2;
+    --background-color: #f4f7f6;
+    --text-color: #333;
+    --card-bg: #ffffff;
+    --danger-color: #D0021B;
+    --success-color: #7ED321;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    overscroll-behavior-y: contain; /* Evita recargar al deslizar hacia abajo en PWA */
+}
+
+/* --- Loader --- */
+.loader-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.loader {
+    border: 8px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 8px solid var(--primary-color);
+    width: 60px; height: 60px;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* --- Pantalla de Login --- */
+#login-view {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+.login-container {
+    text-align: center;
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 400px;
+    width: 100%;
+}
+.logo {
+    max-width: 150px;
+    margin-bottom: 20px;
+}
+#login-container h1 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+#login-form input {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+}
+#login-form button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+#login-form button:hover {
+    background-color: #357ABD;
+}
+
+/* --- Panel Principal (Dashboard) --- */
+#dashboard-view {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#main-content {
+    flex-grow: 1;
+    padding: 20px;
+    width: 100%;
+}
+
+#alarm-sidebar {
+    width: 300px;
+    background-color: #e9eef2;
+    padding: 20px;
+    height: 100vh;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+}
+
+.patient-header {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.patient-header h2 {
+    margin: 0 0 10px 0;
+    color: var(--primary-color);
+}
+.patient-details p {
+    margin: 5px 0;
+    font-size: 1rem;
+}
+.allergies {
+    color: var(--danger-color);
+    font-weight: bold;
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.medication {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+.medication:last-child {
+    border-bottom: none;
+}
+.med-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.med-header h4 {
+    margin: 0;
+    color: var(--primary-color);
+}
+.med-header .med-date {
+    font-size: 0.8em;
+    color: #666;
+}
+.med-details, .med-instructions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    font-size: 0.9em;
+}
+.med-details p, .med-instructions p { margin: 0; }
+.med-details strong { color: #555; }
+.med-instructions { margin-top: 10px; background-color: #f8f9fa; padding: 10px; border-radius: 8px; }
+
+/* Seguimiento de Dosis */
+.dose-tracker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 15px;
+}
+.day-selector {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    background-color: #f0f0f0;
+    transition: background-color 0.2s;
+}
+.day-selector.taken {
+    background-color: var(--success-color);
+    color: white;
+    border-color: #68b31c;
+}
+
+/* Estado del tratamiento */
+.treatment-status {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.status-btn {
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+    cursor: pointer;
+    background-color: transparent;
+    font-size: 0.9em;
+}
+.status-btn.finish { border-color: var(--success-color); color: var(--success-color); }
+.status-btn.suspend { border-color: var(--danger-color); color: var(--danger-color); }
+.status-icon {
+    font-size: 2em;
+    margin-left: 10px;
+}
+.status-icon.completed { color: var(--success-color); }
+.status-icon.suspended { color: var(--danger-color); }
+
+/* Botones de Acción */
+.action-buttons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.action-btn {
+    padding: 15px;
+    border-radius: 8px;
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.2s;
+}
+.action-btn:hover { transform: scale(1.03); }
+#btn-meet { background-color: #00897B; } /* Teal */
+#btn-drive { background-color: #FFB300; } /* Amber */
+#btn-telegram { background-color: #039BE5; } /* Light Blue */
+#btn-payment { background-color: var(--success-color); }
+#btn-save-image { background-color: #546E7A; } /* Blue Grey */
+
+.social-logo {
+    display: block;
+    max-width: 250px;
+    margin: 30px auto 0 auto;
+}
+
+/* Panel de Alarmas */
+#alarm-sidebar h3 {
+    text-align: center;
+    margin-top: 0;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+}
+.symptom-group { margin-bottom: 20px; }
+.symptom-group h4 { margin-bottom: 10px; }
+.symptom-group label {
+    display: block;
+    margin-bottom: 8px;
+    background: white;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.symptom-group label:hover { background: #f0f0f0; }
+
+/* Modal de Pago */
+.modal {
+    position: fixed; z-index: 1000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    overflow: auto; background-color: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+}
+.modal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px; right: 20px;
+    font-size: 28px; font-weight: bold;
+    cursor: pointer;
+}
+.clabe-container {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#clabe-number {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #eee;
+}
+#copy-clabe {
+    padding: 8px 12px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+/* Pie de página */
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 20px;
+    background: #e9eef2;
+    width: 100%;
+}
+footer p {
+    margin: 0;
+    color: #555;
+}
+.footer-details {
+    font-size: 0.8em;
+    max-width: 800px;
+    margin: 5px auto 0 auto;
+}
+
+/* --- Diseño Responsivo --- */
+@media (max-width: 900px) {
+    #dashboard-view {
+        flex-direction: column;
+    }
+    #alarm-sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        margin-top: 20px;
+        border-top: 3px solid var(--primary-color);
+    }
+    #main-content {
+        width: 100%;
+    }
+    .action-buttons-grid {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 480px) {
+    .login-container {
+        padding: 20px;
+    }
+    #main-content, #alarm-sidebar, .card, .patient-header {
+        padding: 15px;
+    }
+    .med-details, .med-instructions {
+        grid-template-columns: 1fr;
+    }
+}
