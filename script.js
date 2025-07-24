@@ -235,3 +235,32 @@ function setupActionButtons(data) {
         });
     });
 }
+function setupDynamicEventListeners() {
+    const medList = document.getElementById('medication-list');
+    if (!medList) return;
+
+    medList.addEventListener('change', function(event) {
+        // Revisa si el cambio fue en un radio button de estado
+        if (event.target.type === 'radio' && event.target.name.startsWith('status_med')) {
+            const medicationCard = event.target.closest('.medication-item');
+            if (!medicationCard) return;
+
+            // Limpia clases de estado previas de la tarjeta
+            medicationCard.classList.remove('status-finished', 'status-suspended');
+
+            // Añade la clase correcta a la tarjeta para el feedback visual
+            if (event.target.id.includes('finished')) {
+                medicationCard.classList.add('status-finished');
+            } else if (event.target.id.includes('suspended')) {
+                medicationCard.classList.add('status-suspended');
+            }
+        }
+    });
+}
+
+// Invocamos la función después de que los datos del paciente se cargan
+const originalLoadPatientData = window.loadPatientData;
+window.loadPatientData = async function() {
+    await originalLoadPatientData();
+    setupDynamicEventListeners();
+};
