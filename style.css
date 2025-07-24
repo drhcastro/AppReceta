@@ -195,21 +195,26 @@ body {
     transform: scale(1.1);
 }
 
-/* --- Estado del Tratamiento (CORREGIDO) --- */
+/* --- Estado del Tratamiento (CORREGIDO PARA MÓVIL) --- */
 .treatment-status {
     margin-top: 15px;
     font-size: 1.1em;
+    /* Usamos Flexbox para alinear los elementos */
+    display: flex;
+    flex-wrap: wrap; /* Permite que pasen a la siguiente línea si no caben */
+    align-items: center; /* Centra verticalmente */
+    gap: 10px; /* Espacio entre el título y los botones */
+}
+.treatment-status strong {
+    margin-right: 10px; /* Espacio a la derecha del texto "Estado..." */
 }
 .treatment-status label {
-    margin-right: 15px;
+    margin-right: 5px; /* Reduce el margen derecho */
     cursor: pointer;
     padding: 6px 12px;
     border-radius: 8px;
     transition: all 0.3s ease;
     border: 2px solid transparent;
-}
-.treatment-status input {
-    display: none; /* Ocultamos el radio button real */
 }
 /* Estilo para la etiqueta cuando su radio button está seleccionado */
 input[id^="status_finished"]:checked ~ label[for^="status_finished"] {
