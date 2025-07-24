@@ -1,147 +1,187 @@
+/* =========================================
+   NUEVO ESTILO: MODERNO Y LIMPIO
+   ========================================= */
+
 :root {
-    --primary-color: #007bff;
-    --secondary-color: #f8f9fa;
-    --dark-color: #343a40;
-    --light-color: #ffffff;
-    --danger-color: #dc3545;
-    --success-color: #28a745;
-    --border-radius: 8px;
+    --primary-color: #005f73;   /* Un azul oscuro y serio */
+    --secondary-color: #0a9396; /* Verde azulado (teal) para acentos */
+    --background-color: #f0f4f8; /* Un gris azulado muy claro */
+    --surface-color: #ffffff;  /* Blanco para las tarjetas */
+    --text-color: #0d1b2a;      /* Negro suave */
+    --light-text-color: #6c757d; /* Gris para texto secundario */
+    --danger-color: #d90429;    /* Rojo para alertas */
+    --success-color: #008000;   /* Verde para éxito */
+    --border-radius: 12px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', system-ui, sans-serif;
     margin: 0;
-    background-color: #eef2f5;
-    color: var(--dark-color);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
 }
 
 .container {
-    padding: 15px;
+    padding: 20px;
     max-width: 900px;
     margin: 0 auto;
 }
 
-/* --- Login Page --- */
+/* --- Página de Inicio (Login) --- */
 .login-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100vh;
     padding: 20px;
     text-align: center;
 }
 .logo {
-    width: 150px;
-    margin-bottom: 20px;
+    width: 130px;
+    margin-bottom: 25px;
 }
 .login-container h1 {
-    font-size: 2em;
+    font-size: 2.2em;
+    font-weight: 700;
     color: var(--primary-color);
+    margin-bottom: 8px;
+}
+.login-container p {
+    color: var(--light-text-color);
+    margin-bottom: 25px;
 }
 .login-container input {
     width: 100%;
-    padding: 12px;
+    max-width: 350px;
+    padding: 15px;
     margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: var(--border-radius);
     font-size: 1.1em;
+    box-sizing: border-box;
 }
 .login-container button {
     width: 100%;
-    padding: 12px;
+    max-width: 350px;
+    padding: 15px;
     background-color: var(--primary-color);
-    color: var(--light-color);
+    color: var(--surface-color);
     border: none;
     border-radius: var(--border-radius);
     font-size: 1.1em;
+    font-weight: 600;
     cursor: pointer;
+    transition: background-color 0.3s;
+}
+.login-container button:hover {
+    background-color: #004c5a;
 }
 .error-message {
     color: var(--danger-color);
-    margin-top: 10px;
+    font-weight: 500;
+    margin-top: 15px;
 }
 
-/* --- App General --- */
+/* --- Estructura General de la App --- */
 .app-header {
-    background-color: var(--light-color);
-    padding: 10px 20px;
+    background-color: var(--surface-color);
+    padding: 12px 20px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 .logo-small {
-    height: 40px;
+    height: 45px;
     margin-right: 15px;
 }
 .app-header h1 {
-    font-size: 1.2em;
+    font-size: 1.3em;
+    font-weight: 600;
     margin: 0;
 }
 .card {
-    background-color: var(--light-color);
+    background-color: var(--surface-color);
     border-radius: var(--border-radius);
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: var(--box-shadow);
 }
 .allergies {
     color: var(--danger-color);
-    font-weight: bold;
+    background-color: #fff0f3;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 700;
+    border-left: 4px solid var(--danger-color);
 }
 #loader {
     text-align: center;
-    padding: 40px;
+    padding: 50px;
     font-size: 1.2em;
+    color: var(--light-text-color);
 }
 
-/* --- Medications --- */
+/* --- Sección de Medicamentos --- */
 .medication-item {
-    border-top: 1px solid #eee;
-    padding-top: 15px;
-    margin-top: 15px;
-}
-.medication-item:first-child {
-    border-top: none;
-    padding-top: 0;
-    margin-top: 0;
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin-top: 20px;
 }
 .medication-header h4 {
-    margin: 0;
+    margin: 0 0 5px 0;
     color: var(--primary-color);
+    font-size: 1.4em;
+}
+.medication-header small {
+    color: var(--light-text-color);
+    font-style: italic;
 }
 .medication-details {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 10px;
-    margin: 10px 0;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin: 15px 0;
 }
 .medication-details p {
     margin: 0;
-    padding: 5px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
+    padding: 8px;
+    background-color: var(--background-color);
+    border-radius: 6px;
+    font-size: 0.95em;
+}
+.medication-details p strong {
+    color: var(--primary-color);
 }
 
+/* --- Seguimiento de Progreso --- */
 .progress-tracker {
-    margin: 15px 0;
+    margin: 20px 0;
 }
 .progress-checks {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: 6px;
     padding: 10px 0;
 }
 .progress-checks label {
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-    text-align: center;
-    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 2px solid #ccc;
     border-radius: 50%;
     cursor: pointer;
     font-size: 0.8em;
+    font-weight: 600;
+    transition: all 0.2s;
 }
 .progress-checks input {
     display: none;
@@ -150,13 +190,14 @@ body {
     background-color: var(--success-color);
     color: white;
     border-color: var(--success-color);
+    transform: scale(1.1);
 }
 .treatment-status {
-    margin-top: 10px;
+    margin-top: 15px;
+    font-size: 1.1em;
 }
 .treatment-status label {
-    margin-right: 15px;
-    font-size: 1.5em;
+    margin-right: 20px;
     cursor: pointer;
 }
 .treatment-status input {
@@ -164,95 +205,119 @@ body {
 }
 input#status-finished:checked ~ label[for="status-finished"] {
     color: var(--success-color);
+    font-weight: 700;
 }
 input#status-suspended:checked ~ label[for="status-suspended"] {
     color: var(--danger-color);
+    font-weight: 700;
 }
 
-/* --- Action Buttons --- */
+/* --- Botones de Acción --- */
 .button-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 15px;
 }
 .action-button {
     display: block;
     text-decoration: none;
-    background-color: var(--primary-color);
+    background-color: var(--secondary-color);
     color: white;
     padding: 15px;
     text-align: center;
     border-radius: var(--border-radius);
     border: none;
     font-size: 1em;
+    font-weight: 600;
     cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
 }
 .action-button.urgency { background-color: var(--danger-color); }
 .action-button.payment { background-color: var(--success-color); }
+#expediente-btn { background-color: #4a4e69; }
 
-/* --- Urgency Page --- */
+/* --- Página de Urgencia y Pago --- */
 #urgencyForm label {
     display: block;
     margin: 10px 0;
-    padding: 10px;
+    padding: 12px;
     background: #f9f9f9;
-    border-radius: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+#urgencyForm label:hover {
+    background-color: #f0f0f0;
 }
 .full-width {
     width: 100%;
     box-sizing: border-box;
-    margin-top: 20px;
+    margin-top: 25px;
 }
-
-/* --- Payment Page --- */
 .payment-card { text-align: center; }
-.payment-image { max-width: 100%; height: auto; margin: 20px 0; }
+.payment-image { max-width: 100%; border-radius: var(--border-radius); margin: 20px 0; }
 .clabe-section {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 10px;
-    background: #f0f0f0;
+    gap: 15px;
+    padding: 12px;
+    background: var(--background-color);
     border-radius: var(--border-radius);
 }
-#clabeNumber { font-family: 'Courier New', Courier, monospace; font-size: 1.2em; }
+#clabeNumber { font-family: 'Courier New', Courier, monospace; font-size: 1.3em; font-weight: 700; }
 #copyButton {
-    padding: 8px 15px;
+    padding: 10px 18px;
     border: none;
     background-color: var(--primary-color);
     color: white;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
 }
 .back-link {
     display: inline-block;
-    margin-top: 20px;
+    margin-top: 25px;
     color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
 }
 
 /* --- Footer --- */
 .app-footer {
     text-align: center;
-    padding: 20px;
-    font-size: 0.8em;
-    color: #666;
+    padding: 30px 20px;
+    font-size: 0.9em;
+    color: var(--light-text-color);
+    border-top: 1px solid #e0e0e0;
+    margin-top: 30px;
 }
 .social-logo {
     width: 150px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    opacity: 0.8;
+}
+.app-footer p {
+    margin: 5px 0;
 }
 .footer-details {
     max-width: 600px;
-    margin: 5px auto;
+    margin: 10px auto;
+    font-size: 0.9em;
 }
 
-/* --- Responsiveness --- */
-@media (max-width: 600px) {
+/* --- Diseño Responsivo --- */
+@media (max-width: 768px) {
     .button-grid {
         grid-template-columns: 1fr;
     }
     .medication-details {
         grid-template-columns: 1fr;
+    }
+    .app-header h1 {
+        font-size: 1.1em;
     }
 }
