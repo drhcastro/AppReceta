@@ -333,3 +333,20 @@ window.loadPatientData = async function() {
     await originalLoadPatientData();
     setupDynamicEventListeners();
 };
+function setupLogoutButton() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('patientCode'); // Borra solo el código del paciente
+            window.location.href = 'index.html'; // Redirige a la página de inicio
+        });
+    }
+}
+
+// Asegúrate de llamar a esta función cuando la página cargue
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('app-content')) {
+        loadPatientData();
+        setupLogoutButton(); // <-- AÑADE ESTA LÍNEA
+    }
+});
