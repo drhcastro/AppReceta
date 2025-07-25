@@ -360,8 +360,61 @@ function setupLogoutButton() {
 
 // Asegúrate de llamar a esta función cuando la página cargue
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('app-content')) {
+    // Revisa en qué página estamos y ejecuta la función correspondiente
+    if (document.querySelector('.page')) { // Identificador único de receta.html
+        populateRecetaPage();
+    } else if (document.getElementById('app-content')) { // Identificador de app.html
         loadPatientData();
-        setupLogoutButton(); // <-- AÑADE ESTA LÍNEA
+        setupLogoutButton();
     }
 });
+// << PEGA AQUÍ EL ENLACE .CSV QUE COPIASTE DE GOOGLE SHEETS >>
+// Asegúrate de que esta constante esté al inicio de tu script
+const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCh0jOiaAGNdoytpJ1sU8W-tJHO6ef1Mmgu4JpMA7oU3KvAvWNmioFlLJ4XzHH_Tgk1-wPAvpw7YaM/pub?gid=0&single=true&output=csv';
+
+async function populateRecetaPage() {
+    const patientCode = localStorage.getItem('patientCode');
+    if (!patientCode) {
+        document.body.innerHTML = 'Error: No se encontró código de paciente. Vuelva a la app e inténtelo de nuevo.';
+        return;
+    }
+
+    const data = await fetchData(); // Usamos la función que ya existe
+    if (!data) {
+        document.body.innerHTML = 'Error al cargar los datos.';
+        return;
+    }
+
+    const patientData = data.find(row => row.codigo_unico && row.codigo_unico.trim().toUpperCase() === patientCode);
+
+    if (patientData) {
+        // Llenar datos del paciente
+        document.getElementById('receta-paciente').textContent = patientData.nombre_completo || '';
+        document.getElementById('receta-dob').textContent = patientData.fecha_nacimiento || '';
+        document.getElementById('receta-diagnostico').textContent = patientData.diagnostico || 'No especificado.';
+        document.getElementById('receta-fecha').textContent = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+
+        // Llenar medicamentos
+        const medList = document.getElementById('receta-medicamentos');
+        medList.innerHTML = '';
+        let medCount = 0;
+        for (let i = 1; i <= 10; i++) {
+            if (patientData[`med${i}_generico`] && patientData[`med${i}_generico`].trim() !== '') {
+                medCount++;
+                const medItem = document.createElement('li');
+                medItem.innerHTML = `
+                    <strong>${patientData[`med${i}_generico`]} (${patientData[`med${i}_comercial`]})</strong> - ${patientData[`med${i}_presentacion`]} ${patientData[`med${i}_concentracion`]}<br>
+                    Surtir: ${patientData[`med${i}_surtir`]}<br>
+                    Indicaciones: ${patientData[`med${i}_dosis`]} ${patientData[`med${i}_via`]} cada ${patientData[`med${i}_frecuencia`]} por ${patientData[`med${i}_duracion`]} días.<br>
+                    <i>${patientData[`med${i}_indicaciones`]}</i>
+                `;
+                medList.appendChild(medItem);
+            }
+        }
+        if (medCount === 0) {
+            medList.innerHTML = '<li>No hay medicamentos indicados.</li>';
+        }
+    } else {
+        document.body.innerHTML = `Error: Paciente con código "${patientCode}" no encontrado.`;
+    }
+}
