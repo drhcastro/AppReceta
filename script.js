@@ -1,13 +1,13 @@
-// << PEGA AQUÍ EL ENLACE .CSV QUE COPIASTE DE GOOGLE SHEETS >>
+// script.js (Versión Final Unificada)
+
+// URL de la base de datos en Google Sheets
 const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCh0jOiaAGNdoytpJ1sU8W-tJHO6ef1Mmgu4JpMA7oU3KvAvWNmioFlLJ4XzHH_Tgk1-wPAvpw7YaM/pub?gid=0&single=true&output=csv';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Si estamos en la página de la app, cargamos los datos
-    if (document.getElementById('app-content')) {
-        loadPatientData();
-    }
-});
+// --- FUNCIONES PRINCIPALES DE CARGA Y VISUALIZACIÓN ---
 
+/**
+ * Busca y convierte los datos del archivo CSV de Google Sheets.
+ */
 async function fetchData() {
     try {
         const response = await fetch(GOOGLE_SHEET_URL);
@@ -22,42 +22,48 @@ async function fetchData() {
     }
 }
 
+/**
+ * Carga y muestra toda la información en la página principal de la app.
+ */
 async function loadPatientData() {
-    const patientCode = localStorage.getItem('patientCode');
     const loader = document.getElementById('loader');
+    const patientCode = localStorage.getItem('patientCode');
     
     if (!patientCode) {
         loader.textContent = 'Error: No se encontró código de paciente. Por favor, vuelve a la página de inicio.';
         return;
     }
 
-    // Usaremos la librería PapaParse para leer el CSV. La incluimos desde un CDN.
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js';
-    script.onload = async () => {
-        const data = await fetchData();
-        if (!data) {
-            loader.textContent = 'No se pudieron cargar los datos. Revisa la conexión o el enlace de la base deatos.';
-            return;
-        }
+    const data = await fetchData();
+    if (!data) {
+        loader.textContent = 'No se pudieron cargar los datos. Revisa la conexión o el enlace de la base de datos.';
+        return;
+    }
 
-        const patientData = data.find(row => row.codigo_unico && row.codigo_unico.trim().toUpperCase() === patientCode);
+    const patientData = data.find(row => row.codigo_unico && row.codigo_unico.trim().toUpperCase() === patientCode);
 
-        if (patientData) {
-            loader.style.display = 'none';
-            displayPatientInfo(patientData);
-            displayMedications(patientData);
-            setupActionButtons(patientData);
-            document.getElementById('patient-info').style.display = 'block';
-            document.getElementById('diagnosis-section').style.display = 'block';
+    if (patientData) {
+        // Oculta el cargador y muestra la información
+        loader.style.display = 'none';
+        displayPatientInfo(patientData);
+        displayMedications(patientData);
+        setupActionButtons(patientData);
+        
+        // Llamamos a las funciones de configuración aquí, después de crear los elementos
+        setupDynamicEventListeners();
+        setupLogoutButton();
 
-        } else {
-            loader.textContent = `Código "${patientCode}" no encontrado. Verifica que sea correcto.`;
-        }
-    };
-    document.head.appendChild(script);
+        document.getElementById('patient-info').style.display = 'block';
+        document.getElementById('diagnosis-section').style.display = 'block';
+
+    } else {
+        loader.textContent = `Código "${patientCode}" no encontrado. Verifica que sea correcto.`;
+    }
 }
 
+/**
+ * Muestra la información personal del paciente.
+ */
 function displayPatientInfo(data) {
     document.getElementById('patient-name').textContent = data.nombre_completo || 'N/A';
     document.getElementById('patient-dob').textContent = data.fecha_nacimiento || 'N/A';
@@ -70,129 +76,18 @@ function displayPatientInfo(data) {
         document.getElementById('patient-allergies').style.display = 'none';
     }
 
-    // Calcular edad
-    if (data.fecha_nacimiento) {
-        document.getElementById('patient-age').textContent = calculateAge(data.fecha_nacimiento);
-    }
-    
-    // Fecha actual
-    const today = new Date();
-    document.getElementById('current-date').textContent = today.toLocaleDateString('es-ES');
+    document.getElementById('patient-age').textContent = calculateAge(data.fecha_nacimiento);
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function calculateAge(dobString) {
-    // Asumimos formato DD/MM/AAAA
-    const parts = dobString.split('/');
-    if (parts.length !== 3) return 'Fecha inválida';
-    const dob = new Date(parts[2], parts[1] - 1, parts[0]);
-    
-    let today = new Date();
-    let years = today.getFullYear() - dob.getFullYear();
-    let months = today.getMonth() - dob.getMonth();
-    let days = today.getDate() - dob.getDate();
-
-    if (days < 0) {
-        months--;
-        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-    }
-    if (months < 0) {
-        years--;
-        months += 12;
-    }
-    return `${years} años, ${months} meses y ${days} días`;
-}function calculateAge(dobString) {
-    // Asegurarse de que el formato es DD/MM/AAAA y es una fecha válida.
-    const parts = dobString.split('/');
-    if (parts.length !== 3 || parts[0].length > 2 || parts[1].length > 2 || parts[2].length !== 4) {
-        return 'Formato de fecha inválido';
-    }function calculateAge(dobString) {
-    if (!dobString || typeof dobString !== 'string') {
-        return 'Fecha no proporcionada.';
-    }
-
-    // Limpia la fecha de espacios y usa '/' o '-' como separador
-    const cleanedDobString = dobString.trim();
-    const parts = cleanedDobString.split(/[/|-]/);
-
-    if (parts.length !== 3) {
-        return 'Formato de fecha inválido.';
-    }
-
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // Mes en JS es 0-indexado
-    const year = parseInt(parts[2], 10);
-
-    if (isNaN(day) || isNaN(month) || isNaN(year)) {
-        return 'Fecha contiene caracteres no válidos.';
-    }
-
-    const dob = new Date(year, month, day);
-
-    // Verificación final para fechas inválidas (ej. 31/02/2024)
-    if (dob.getFullYear() !== year || dob.getMonth() !== month || dob.getDate() !== day) {
-        return "La fecha no existe.";
-    }
-
-    const today = new Date();
-    if (dob > today) {
-        return "La fecha de nacimiento no puede ser en el futuro.";
-    }
-    
-    let ageYears = today.getFullYear() - dob.getFullYear();
-    let ageMonths = today.getMonth() - dob.getMonth();
-    let ageDays = today.getDate() - dob.getDate();
-
-    if (ageDays < 0) {
-        ageMonths--;
-        ageDays += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-    }
-
-    if (ageMonths < 0) {
-        ageYears--;
-        ageMonths += 12;
-    }
-
-    return `${ageYears} años, ${ageMonths} meses y ${ageDays} días`;
-}
-
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // Mes en JS es 0-indexado (0=Enero, 11=Diciembre)
-    const year = parseInt(parts[2], 10);
-
-    const dob = new Date(year, month, day);
-
-    // Verificación adicional para fechas inválidas (ej. 31/02/2024)
-    if (dob.getFullYear() !== year || dob.getMonth() !== month || dob.getDate() !== day) {
-        return "Fecha inexistente.";
-    }
-
-    const today = new Date();
-    
-    let ageYears = today.getFullYear() - dob.getFullYear();
-    let ageMonths = today.getMonth() - dob.getMonth();
-    let ageDays = today.getDate() - dob.getDate();
-
-    // Ajustar si el día actual es menor que el día de nacimiento
-    if (ageDays < 0) {
-        ageMonths--;
-        // new Date(año, mes, 0) nos da el último día del mes anterior
-        ageDays += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-    }
-
-    // Ajustar si el mes actual es menor que el mes de nacimiento
-    if (ageMonths < 0) {
-        ageYears--;
-        ageMonths += 12;
-    }
-
-    return `${ageYears} años, ${ageMonths} meses y ${ageDays} días`;
-}
-
+/**
+ * Muestra la lista de medicamentos indicados.
+ */
 function displayMedications(data) {
     const container = document.getElementById('medication-list');
     const patientCode = localStorage.getItem('patientCode');
     
-    let allMedicationsHTML = []; // <-- Usaremos un array para juntar el HTML
+    let allMedicationsHTML = [];
     let medicationCount = 0;
 
     for (let i = 1; i <= 10; i++) {
@@ -220,158 +115,47 @@ function displayMedications(data) {
             const duration = parseInt(med.duracion) || 0;
             for (let day = 1; day <= duration; day++) {
                 const isChecked = savedProgress[day] ? 'checked' : '';
-                progressChecksHTML += `
-                    <label>
-                        <input type="checkbox" data-day="${day}" ${isChecked}>
-                        <span>${day}</span>
-                    </label>
-                `;
+                progressChecksHTML += `<label><input type="checkbox" data-day="${day}" ${isChecked}><span>${day}</span></label>`;
             }
 
             const isFinished = savedStatus === 'finished' ? 'checked' : '';
             const isSuspended = savedStatus === 'suspended' ? 'checked' : '';
             const cardStatusClass = savedStatus ? `status-${savedStatus}` : '';
 
-            // Creamos el HTML para esta tarjeta de medicamento
             const medicationHTML = `
                 <article class="medication-item card ${cardStatusClass}" id="${medId}">
-                    <div class="medication-header">
-                        <h4>${med.generico} (${med.comercial || 'N/A'})</h4>
-                        <small>Indicado el: ${med.fecha_indicacion || 'N/A'}</small>
-                    </div>
+                    <div class="medication-header"><h4>${med.generico} (${med.comercial || 'N/A'})</h4><small>Indicado el: ${med.fecha_indicacion || 'N/A'}</small></div>
                     <div class="medication-details">
-                        <p><strong>Presentación:</strong> ${med.presentacion || 'N/A'}</p>
-                        <p><strong>Concentración:</strong> ${med.concentracion || 'N/A'}</p>
-                        <p><strong>Surtir:</strong> ${med.surtir || 'N/A'}</p>
-                        <p><strong>Vía:</strong> ${med.via || 'N/A'}</p>
-                        <p><strong>Dosis:</strong> ${med.dosis || 'N/A'}</p>
-                        <p><strong>Frecuencia:</strong> ${med.frecuencia || 'N/A'}</p>
+                        <p><strong>Presentación:</strong> ${med.presentacion || 'N/A'}</p><p><strong>Concentración:</strong> ${med.concentracion || 'N/A'}</p>
+                        <p><strong>Surtir:</strong> ${med.surtir || 'N/A'}</p><p><strong>Vía:</strong> ${med.via || 'N/A'}</p>
+                        <p><strong>Dosis:</strong> ${med.dosis || 'N/A'}</p><p><strong>Frecuencia:</strong> ${med.frecuencia || 'N/A'}</p>
                     </div>
-                    <p><strong>Duración:</strong> ${med.duracion || 'N/A'} días</p>
-                    <p><strong>Indicaciones Especiales:</strong> ${med.indicaciones || 'Ninguna'}</p>
-                    <div class="progress-tracker">
-                        <strong>Avance del tratamiento (días):</strong>
-                        <div class="progress-checks">${progressChecksHTML}</div>
-                    </div>
+                    <p><strong>Duración:</strong> ${med.duracion || 'N/A'} días</p><p><strong>Indicaciones Especiales:</strong> ${med.indicaciones || 'Ninguna'}</p>
+                    <div class="progress-tracker"><strong>Avance del tratamiento (días):</strong><div class="progress-checks">${progressChecksHTML}</div></div>
                     <div class="treatment-status">
                         <strong>Estado del Tratamiento:</strong>
-                        <input type="radio" name="status_${medId}" id="status_finished_${i}" value="finished" ${isFinished}>
-                        <label for="status_finished_${i}">✅ Terminado</label>
-                        <input type="radio" name="status_${medId}" id="status_suspended_${i}" value="suspended" ${isSuspended}>
-                        <label for="status_suspended_${i}">❌ Suspendido</label>
+                        <input type="radio" name="status_${medId}" id="status_finished_${i}" value="finished" ${isFinished}><label for="status_finished_${i}">✅ Terminado</label>
+                        <input type="radio" name="status_${medId}" id="status_suspended_${i}" value="suspended" ${isSuspended}><label for="status_suspended_${i}">❌ Suspendido</label>
                     </div>
                 </article>
             `;
-            // Añadimos el HTML de esta tarjeta al array
             allMedicationsHTML.push(medicationHTML);
         }
     }
 
-    // Al final, decidimos qué mostrar
     if (medicationCount === 0) {
-        // Si no hay medicamentos, muestra el mensaje
-        container.innerHTML = `
-            <div class="card">
-                <p>No hay medicamentos indicados por el momento.</p>
-            </div>
-        `;
+        container.innerHTML = `<div class="card"><p>No hay medicamentos indicados por el momento.</p></div>`;
     } else {
-        // Si hay medicamentos, une todo el HTML del array y lo inserta de una sola vez
         container.innerHTML = allMedicationsHTML.join('');
     }
 }
 
-function setupActionButtons(data) {
-    const expedienteBtn = document.getElementById('expediente-btn');
-    if (data.enlace_expediente) {
-        expedienteBtn.href = data.enlace_expediente;
-    } else {
-        expedienteBtn.style.display = 'none';
-    }
 
-    const telegramBtn = document.getElementById('telegram-btn');
-    if (data.enlace_telegram) {
-        telegramBtn.href = data.enlace_telegram;
-    } else {
-        telegramBtn.style.display = 'none';
-    }
+// --- LÓGICA PARA PÁGINA DE RECETA IMPRIMIBLE ---
 
-    // Botón para guardar imagen
-    document.getElementById('save-image-btn').addEventListener('click', () => {
-        const content = document.getElementById('app-content');
-        html2canvas(content, { 
-            useCORS: true, 
-            backgroundColor: '#eef2f5' 
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `Avance_AppReceta_${new Date().toISOString().slice(0,10)}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-        });
-    });
-}
-function setupDynamicEventListeners() {
-    const medList = document.getElementById('medication-list');
-    const patientCode = localStorage.getItem('patientCode');
-    if (!medList || !patientCode) return;
-
-    medList.addEventListener('change', function(event) {
-        const medicationCard = event.target.closest('.medication-item');
-        if (!medicationCard) return;
-        const medId = medicationCard.id;
-
-        // --- GUARDAR PROGRESO DE DÍAS ---
-        if (event.target.type === 'checkbox') {
-            const day = event.target.dataset.day;
-            const progressKey = `${patientCode}_${medId}_progress`;
-            const savedProgress = JSON.parse(localStorage.getItem(progressKey)) || {};
-            savedProgress[day] = event.target.checked;
-            localStorage.setItem(progressKey, JSON.stringify(savedProgress));
-        }
-
-        // --- GUARDAR ESTADO DEL TRATAMIENTO ---
-        if (event.target.type === 'radio' && event.target.name.startsWith('status_')) {
-            const statusKey = `${patientCode}_${medId}_status`;
-            localStorage.setItem(statusKey, event.target.value);
-            
-            medicationCard.classList.remove('status-finished', 'status-suspended');
-            if (event.target.checked) {
-                medicationCard.classList.add(`status-${event.target.value}`);
-            }
-        }
-    });
-}
-
-// Invocamos la función después de que los datos del paciente se cargan
-const originalLoadPatientData = window.loadPatientData;
-window.loadPatientData = async function() {
-    await originalLoadPatientData();
-    setupDynamicEventListeners();
-};
-function setupLogoutButton() {
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('patientCode'); // Borra solo el código del paciente
-            window.location.href = 'index.html'; // Redirige a la página de inicio
-        });
-    }
-}
-
-// Asegúrate de llamar a esta función cuando la página cargue
-document.addEventListener('DOMContentLoaded', () => {
-    // Revisa en qué página estamos y ejecuta la función correspondiente
-    if (document.querySelector('.page')) { // Identificador único de receta.html
-        populateRecetaPage();
-    } else if (document.getElementById('app-content')) { // Identificador de app.html
-        loadPatientData();
-        setupLogoutButton();
-    }
-});
-// << PEGA AQUÍ EL ENLACE .CSV QUE COPIASTE DE GOOGLE SHEETS >>
-// Asegúrate de que esta constante esté al inicio de tu script
-const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCh0jOiaAGNdoytpJ1sU8W-tJHO6ef1Mmgu4JpMA7oU3KvAvWNmioFlLJ4XzHH_Tgk1-wPAvpw7YaM/pub?gid=0&single=true&output=csv';
-
+/**
+ * Carga y muestra los datos en la página de la receta médica.
+ */
 async function populateRecetaPage() {
     const patientCode = localStorage.getItem('patientCode');
     if (!patientCode) {
@@ -379,7 +163,7 @@ async function populateRecetaPage() {
         return;
     }
 
-    const data = await fetchData(); // Usamos la función que ya existe
+    const data = await fetchData();
     if (!data) {
         document.body.innerHTML = 'Error al cargar los datos.';
         return;
@@ -388,13 +172,11 @@ async function populateRecetaPage() {
     const patientData = data.find(row => row.codigo_unico && row.codigo_unico.trim().toUpperCase() === patientCode);
 
     if (patientData) {
-        // Llenar datos del paciente
         document.getElementById('receta-paciente').textContent = patientData.nombre_completo || '';
         document.getElementById('receta-dob').textContent = patientData.fecha_nacimiento || '';
         document.getElementById('receta-diagnostico').textContent = patientData.diagnostico || 'No especificado.';
         document.getElementById('receta-fecha').textContent = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 
-        // Llenar medicamentos
         const medList = document.getElementById('receta-medicamentos');
         medList.innerHTML = '';
         let medCount = 0;
@@ -418,3 +200,114 @@ async function populateRecetaPage() {
         document.body.innerHTML = `Error: Paciente con código "${patientCode}" no encontrado.`;
     }
 }
+
+
+// --- FUNCIONES DE CONFIGURACIÓN Y UTILIDADES ---
+
+/**
+ * Calcula la edad de forma precisa.
+ */
+function calculateAge(dobString) {
+    if (!dobString || typeof dobString !== 'string') return 'Fecha no proporcionada.';
+    const cleanedDobString = dobString.trim();
+    const parts = cleanedDobString.split(/[/|-]/);
+    if (parts.length !== 3) return 'Formato de fecha inválido.';
+    const day = parseInt(parts[0], 10), month = parseInt(parts[1], 10) - 1, year = parseInt(parts[2], 10);
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return 'Fecha contiene caracteres no válidos.';
+    const dob = new Date(year, month, day);
+    if (dob.getFullYear() !== year || dob.getMonth() !== month || dob.getDate() !== day) return "La fecha no existe.";
+    const today = new Date();
+    if (dob > today) return "Fecha de nacimiento en el futuro.";
+    let ageYears = today.getFullYear() - dob.getFullYear(), ageMonths = today.getMonth() - dob.getMonth(), ageDays = today.getDate() - dob.getDate();
+    if (ageDays < 0) { ageMonths--; ageDays += new Date(today.getFullYear(), today.getMonth(), 0).getDate(); }
+    if (ageMonths < 0) { ageYears--; ageMonths += 12; }
+    return `${ageYears} años, ${ageMonths} meses y ${ageDays} días`;
+}
+
+/**
+ * Añade interactividad a los botones de la app principal.
+ */
+function setupDynamicEventListeners() {
+    const medList = document.getElementById('medication-list');
+    const patientCode = localStorage.getItem('patientCode');
+    if (!medList || !patientCode) return;
+
+    medList.addEventListener('change', function(event) {
+        const medicationCard = event.target.closest('.medication-item');
+        if (!medicationCard) return;
+        const medId = medicationCard.id;
+
+        if (event.target.type === 'checkbox') {
+            const day = event.target.dataset.day;
+            const progressKey = `${patientCode}_${medId}_progress`;
+            const savedProgress = JSON.parse(localStorage.getItem(progressKey)) || {};
+            savedProgress[day] = event.target.checked;
+            localStorage.setItem(progressKey, JSON.stringify(savedProgress));
+        }
+
+        if (event.target.type === 'radio' && event.target.name.startsWith('status_')) {
+            const statusKey = `${patientCode}_${medId}_status`;
+            localStorage.setItem(statusKey, event.target.value);
+            medicationCard.classList.remove('status-finished', 'status-suspended');
+            if (event.target.checked) {
+                medicationCard.classList.add(`status-${event.target.value}`);
+            }
+        }
+    });
+}
+
+/**
+ * Configura los botones de acción como enlaces a Expediente y Telegram.
+ */
+function setupActionButtons(data) {
+    const expedienteBtn = document.getElementById('expediente-btn');
+    if (data.enlace_expediente) {
+        expedienteBtn.href = data.enlace_expediente;
+    } else {
+        expedienteBtn.style.display = 'none';
+    }
+
+    const telegramBtn = document.getElementById('telegram-btn');
+    if (data.enlace_telegram) {
+        telegramBtn.href = data.enlace_telegram;
+    } else {
+        telegramBtn.style.display = 'none';
+    }
+
+    document.getElementById('save-image-btn').addEventListener('click', () => {
+        html2canvas(document.getElementById('app-content'), { useCORS: true, backgroundColor: '#f0f4f8' }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Avance_AppReceta_${new Date().toISOString().slice(0,10)}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    });
+}
+
+/**
+ * Configura el botón para "cerrar sesión" y cambiar de paciente.
+ */
+function setupLogoutButton() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('patientCode');
+            window.location.href = 'index.html';
+        });
+    }
+}
+
+
+// --- PUNTO DE ENTRADA PRINCIPAL DE LA APP ---
+
+/**
+ * Este es el inicializador que se ejecuta cuando el DOM está listo.
+ * Decide qué función principal llamar dependiendo de la página actual.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.querySelector('.page')) { // Identificador de receta.html
+        populateRecetaPage();
+    } else if (document.getElementById('app-content')) { // Identificador de app.html
+        loadPatientData();
+    }
+});
