@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receta Médica</title>
+    <link rel="stylesheet" href="receta.css">
+</head>
+<body>
+    <div class="page">
+        <header class="receta-header">
+            <div class="logo-area">
+                <img src="https://i.ibb.co/ns9sT96c/Logo-julio-20250712-140428-0000.png" alt="Logo Consultorio" class="logo">
+                <div class="doctor-info">
+                    <strong>Dr. Héctor Castro Villela</strong><br>
+                    UMSNH 6312733<br>
+                    Rehabilitación orofacial, deglución y alimentación complementaria.
+                </div>
+            </div>
+        </header>
+
+        <section class="patient-data">
+            <p><strong>Paciente:</strong> <span id="receta-paciente">Cargando...</span></p>
+            <p><strong>Fecha de Nacimiento:</strong> <span id="receta-dob"></span></p>
+            <p><strong>Fecha de Emisión:</strong> <span id="receta-fecha"></span></p>
+        </section>
+
+        <section class="diagnosis-data">
+            <p><strong>Diagnóstico:</strong> <span id="receta-diagnostico"></span></p>
+        </section>
+
+        <main class="receta-main">
+            <h2>RP/</h2>
+            <ol id="receta-medicamentos"></ol>
+        </main>
+
+        <footer class="receta-footer">
+            <div class="signature-area">
+                <img src="https://i.ibb.co/0RRcvysW/20250709-052146-0000.png" alt="Firma del Doctor" class="signature-img">
+                <p class="signature-name"><em>Dr. Héctor Castro Villela</em></p>
+                <img src="https://i.ibb.co/whmzyCyq/Logo-julio-20250711-122010-0004.png" alt="Redes Sociales" class="social-img">
+            </div>
+            <div class="address-area">
+                Blvd. N Corona 3671 Pradera Dorada, Culiacán, Sinaloa, México.<br>
+                Lunes a Sábado 7 am a 7 pm (previa cita estricta). Tel. 667 693 1351 - Urgencias 24 horas.
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
