@@ -6,22 +6,21 @@
     <title>Registro de Síntomas</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="sintomas.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>Registro de Síntomas</h1>
 
-        <section id="sintomas-registro" class="card">
+        <section class="card">
             <h2>Nuevo Síntoma</h2>
-            <div class="form-grid">
+            <form id="sintoma-form" class="form-grid">
                 <div>
                     <label for="sintoma-tipo">Síntoma:</label>
                     <select id="sintoma-tipo">
                         <option value="">Seleccionar</option>
-                        <option value="diarrea">Diarrea</option>
-                        <option value="tos">Tos</option>
-                        <option value="vomito">Vómito</option>
+                        <option value="Diarrea">Diarrea</option>
+                        <option value="Tos">Tos</option>
+                        <option value="Vómito">Vómito</option>
                         <option value="otro">Otro</option>
                     </select>
                     <input type="text" id="sintoma-otro" placeholder="Otro síntoma (opcional)" style="display: none;">
@@ -38,53 +37,55 @@
                     <input type="checkbox" id="sintoma-fijar">
                     <label for="sintoma-fijar">Fijar registro (no editar)</label>
                 </div>
-                <button id="guardar-sintoma">Guardar Síntoma</button>
-            </div>
+                <button id="guardar-sintoma" type="button">Guardar Síntoma</button>
+            </form>
             <div id="sintomas-lista">
                 </div>
         </section>
 
-        <section id="fiebre-registro" class="card">
+        <section class="card">
             <h2>Registro de Fiebre</h2>
-            <div class="form-grid">
+            <form id="fiebre-form" class="form-grid">
                 <div>
                     <label for="fiebre-hora">Hora:</label>
                     <input type="time" id="fiebre-hora">
                 </div>
                 <div>
                     <label for="fiebre-temperatura">Temperatura (°C):</label>
-                    <input type="number" id="fiebre-temperatura" min="35.0" max="41.0" step="0.5">
+                    <input type="number" id="fiebre-temperatura" min="35.0" max="41.0" step="0.1">
                 </div>
                 <div>
-                    <label for="fiebre-accion">Acción:</label>
+                    <label for="fiebre-accion">Acción Realizada:</label>
                     <select id="fiebre-accion">
-                        <option value="ninguna">Ninguna acción</option>
-                        <option value="medicamento">Medicamento</option>
-                        <option value="medios_fisicos">Medios físicos</option>
+                        <option value="Ninguna">Ninguna acción</option>
+                        <option value="Medicamento">Medicamento</option>
+                        <option value="Medios Físicos">Medios Físicos</option>
                     </select>
                 </div>
                 <div id="fiebre-accion-detalle" style="display: none;">
-                    <label for="fiebre-detalle-input">Detalle:</label>
-                    <input type="text" id="fiebre-detalle-input" placeholder="Medicamento o medio físico">
+                    <label for="fiebre-detalle-input">Detalle (medicamento o medio físico):</label>
+                    <input type="text" id="fiebre-detalle-input" placeholder="Ej: Paracetamol, compresas, etc.">
                 </div>
-                <button id="guardar-fiebre">Guardar Temperatura</button>
-            </div>
+                <button id="guardar-fiebre" type="button">Guardar Temperatura</button>
+            </form>
             <div id="fiebre-lista">
                 </div>
         </section>
 
         <section id="grafica-fiebre" class="card">
             <h2>Gráfica de Temperatura</h2>
-            <canvas id="fiebreChart" width="400" height="200"></canvas>
-            <button id="guardar-grafica-imagen" class="action-button">Guardar Gráfica como Imagen</button>
+            <div style="height:250px;">
+                <canvas id="fiebreChart"></canvas>
+            </div>
+            <button id="guardar-grafica-imagen" type="button" class="action-button">Guardar Gráfica como Imagen</button>
         </section>
 
         <div class="button-container">
-            <button id="regresar-medicamentos" class="action-button">Regresar a Medicamentos</button>
+            <button id="regresar-medicamentos" type="button" class="action-button">Regresar a Medicamentos</button>
         </div>
     </div>
 
-    <script src="script.js"></script>
-    <script src="sintomas.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="sintomas.js" defer></script>
 </body>
 </html>

@@ -1,239 +1,154 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Comprobación Inicial ---
     const patientCode = localStorage.getItem('patientCode');
     if (!patientCode) {
-        alert('Código de paciente no encontrado. Vuelva a la página principal.');
+        alert('Código de paciente no encontrado. Por favor, regrese a la página principal.');
         window.location.href = 'app.html';
         return;
     }
 
     // --- Selectores de Elementos ---
-    const sintomasTipoSelect = document.getElementById('sintoma-tipo');
-    const sintomaOtroInput = document.getElementById('sintoma-otro');
-    const sintomaHoraInput = document.getElementById('sintoma-hora');
-    const sintomaDescripcionInput = document.getElementById('sintoma-descripcion');
-    const sintomaFijarCheckbox = document.getElementById('sintoma-fijar');
+    const sintomaForm = document.getElementById('sintoma-form');
+    const fiebreForm = document.getElementById('fiebre-form');
     const guardarSintomaBtn = document.getElementById('guardar-sintoma');
-    const sintomasListaDiv = document.getElementById('sintomas-lista');
-
-    const fiebreHoraInput = document.getElementById('fiebre-hora');
-    const fiebreTemperaturaInput = document.getElementById('fiebre-temperatura');
-    const fiebreAccionSelect = document.getElementById('fiebre-accion');
-    const fiebreAccionDetalleDiv = document.getElementById('fiebre-accion-detalle');
-    const fiebreDetalleInput = document.getElementById('fiebre-detalle-input');
     const guardarFiebreBtn = document.getElementById('guardar-fiebre');
-    const fiebreListaDiv = document.getElementById('fiebre-lista');
-
-    const fiebreChartCanvas = document.getElementById('fiebreChart');
     const guardarGraficaImagenBtn = document.getElementById('guardar-grafica-imagen');
     const regresarMedicamentosBtn = document.getElementById('regresar-medicamentos');
+    const sintomasListaDiv = document.getElementById('sintomas-lista');
+    const fiebreListaDiv = document.getElementById('fiebre-lista');
+    const fiebreChartCanvas = document.getElementById('fiebreChart').getContext('2d');
+    const sintomasTipoSelect = document.getElementById('sintoma-tipo');
+    const sintomaOtroInput = document.getElementById('sintoma-otro');
+    const fiebreAccionSelect = document.getElementById('fiebre-accion');
+    const fiebreAccionDetalleDiv = document.getElementById('fiebre-accion-detalle');
 
-    // --- Carga de Datos y Estado ---
-    let sintomasRegistrados = cargarRegistros('sintomas', patientCode) || [];
-    let fiebreRegistrada = cargarRegistros('fiebre', patientCode) || [];
-    let indiceEditando = null; // Para saber si estamos editando un síntoma
-
-    // --- Renderizado Inicial ---
-    mostrarSintomas();
-    mostrarFiebre();
-    renderizarGraficaFiebre();
+    // --- Estado de la Aplicación ---
+    let sintomasRegistrados = JSON.parse(localStorage.getItem(`sintomas_${patientCode}`)) || [];
+    let fiebreRegistrada = JSON.parse(localStorage.getItem(`fiebre_${patientCode}`)) || [];
+    let chartInstance = null; // Para mantener una referencia a la gráfica
 
     // --- Lógica de Eventos ---
-    sintomasTipoSelect.addEventListener('change', () => {
-        sintomaOtroInput.style.display = sintomasTipoSelect.value === 'otro' ? 'block' : 'none';
-    });
-
-    fiebreAccionSelect.addEventListener('change', () => {
-        fiebreAccionDetalleDiv.style.display = ['medicamento', 'medios_fisicos'].includes(fiebreAccionSelect.value) ? 'block' : 'none';
-    });
-
-    guardarSintomaBtn.addEventListener('click', () => {
-        const tipo = sintomasTipoSelect.value === 'otro' ? sintomaOtroInput.value.trim() : sintomasTipoSelect.value;
-        const hora = sintomaHoraInput.value;
-        const descripcion = sintomaDescripcionInput.value.trim();
-        const fijado = sintomaFijarCheckbox.checked;
-
-        if (!tipo) {
-            alert('Por favor, seleccione o escriba un síntoma.');
-            return;
-        }
-
-        const nuevoSintoma = { tipo, hora, descripcion, fijado };
-
-        if (indiceEditando !== null) {
-            // Actualizar síntoma existente
-            sintomasRegistrados[indiceEditando] = nuevoSintoma;
-            indiceEditando = null; // Salir del modo edición
-            guardarSintomaBtn.textContent = 'Guardar Síntoma';
-        } else {
-            // Guardar nuevo síntoma
-            sintomasRegistrados.push(nuevoSintoma);
-        }
-
-        guardarRegistros('sintomas', patientCode, sintomasRegistrados);
-        mostrarSintomas();
-        limpiarFormularioSintomas();
-    });
-
-    guardarFiebreBtn.addEventListener('click', () => {
-        const hora = fiebreHoraInput.value;
-        const temperatura = parseFloat(fiebreTemperaturaInput.value);
-        const accion = fiebreAccionSelect.value;
-        const detalle = ['medicamento', 'medios_fisicos'].includes(accion) ? fiebreDetalleInput.value.trim() : '';
-
-        if (!isNaN(temperatura) && temperatura >= 35 && temperatura <= 41) {
-            fiebreRegistrada.push({ hora, temperatura, accion, detalle });
-            guardarRegistros('fiebre', patientCode, fiebreRegistrada);
-            mostrarFiebre();
-            renderizarGraficaFiebre();
-            limpiarFormularioFiebre();
-        } else {
-            alert('Por favor, ingrese una temperatura válida (35.0 - 41.0 °C).');
-        }
-    });
-
-    guardarGraficaImagenBtn.addEventListener('click', () => {
-        const link = document.createElement('a');
-        link.download = `Grafica_Fiebre_${new Date().toISOString().slice(0, 10)}.png`;
-        link.href = fiebreChartCanvas.toDataURL('image/png', 1.0);
-        link.click();
-    });
-
     regresarMedicamentosBtn.addEventListener('click', () => {
         window.location.href = 'app.html';
     });
 
-    // --- Funciones de Ayuda ---
-    function cargarRegistros(tipo, code) {
-        const key = `registros_${tipo}_${code}`;
-        return JSON.parse(localStorage.getItem(key)) || [];
-    }
+    sintomasTipoSelect.addEventListener('change', () => {
+        sintomaOtroInput.style.display = (sintomasTipoSelect.value === 'otro') ? 'block' : 'none';
+    });
 
-    function guardarRegistros(tipo, code, registros) {
-        const key = `registros_${tipo}_${code}`;
-        localStorage.setItem(key, JSON.stringify(registros));
-    }
+    fiebreAccionSelect.addEventListener('change', () => {
+        const showDetail = ['Medicamento', 'Medios Físicos'].includes(fiebreAccionSelect.value);
+        fiebreAccionDetalleDiv.style.display = showDetail ? 'block' : 'none';
+    });
 
-    function mostrarSintomas() {
+    guardarSintomaBtn.addEventListener('click', () => {
+        const tipo = (sintomasTipoSelect.value === 'otro') ? document.getElementById('sintoma-otro').value.trim() : sintomasTipoSelect.value;
+        const hora = document.getElementById('sintoma-hora').value;
+        const descripcion = document.getElementById('sintoma-descripcion').value.trim();
+        const fijado = document.getElementById('sintoma-fijar').checked;
+
+        if (!tipo) {
+            alert('Por favor, seleccione o especifique un síntoma.');
+            return;
+        }
+
+        sintomasRegistrados.push({ tipo, hora, descripcion, fijado, id: Date.now() });
+        localStorage.setItem(`sintomas_${patientCode}`, JSON.stringify(sintomasRegistrados));
+        renderSintomas();
+        sintomaForm.reset();
+        sintomaOtroInput.style.display = 'none';
+    });
+
+    guardarFiebreBtn.addEventListener('click', () => {
+        const hora = document.getElementById('fiebre-hora').value;
+        const temperatura = parseFloat(document.getElementById('fiebre-temperatura').value);
+        const accion = document.getElementById('fiebre-accion').value;
+        const detalle = document.getElementById('fiebre-detalle-input').value.trim();
+
+        if (!hora || isNaN(temperatura) || temperatura < 35.0 || temperatura > 41.0) {
+            alert('Por favor, ingrese una hora y una temperatura válida (entre 35.0 y 41.0).');
+            return;
+        }
+
+        fiebreRegistrada.push({ hora, temperatura, accion, detalle, id: Date.now() });
+        localStorage.setItem(`fiebre_${patientCode}`, JSON.stringify(fiebreRegistrada));
+        renderFiebre();
+        renderGrafica();
+        fiebreForm.reset();
+        fiebreAccionDetalleDiv.style.display = 'none';
+    });
+    
+    guardarGraficaImagenBtn.addEventListener('click', () => {
+        if (chartInstance && fiebreRegistrada.length > 0) {
+            const link = document.createElement('a');
+            link.href = chartInstance.toBase64Image('image/png', 1.0);
+            link.download = `grafica-fiebre-${patientCode}.png`;
+            link.click();
+        } else {
+            alert('No hay datos en la gráfica para guardar.');
+        }
+    });
+
+    // --- Funciones de Renderizado ---
+    function renderSintomas() {
         sintomasListaDiv.innerHTML = '<h3>Síntomas Registrados</h3>';
         if (sintomasRegistrados.length === 0) {
             sintomasListaDiv.innerHTML += '<p>No hay síntomas registrados.</p>';
             return;
         }
-        sintomasRegistrados.forEach((sintoma, index) => {
-            const div = document.createElement('div');
-            div.className = 'sintoma-item';
-            div.innerHTML = `
+        sintomasRegistrados.forEach(sintoma => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'sintoma-item';
+            itemDiv.innerHTML = `
                 <div class="registro-detalles">
-                    <strong>${sintoma.tipo}</strong> - Hora: ${sintoma.hora || 'N/A'}<br>
-                    Descripción: ${sintoma.descripcion || 'Sin descripción'}
+                    <strong>${sintoma.tipo}</strong> - ${sintoma.hora || 'sin hora'}<br>
+                    <small>${sintoma.descripcion || 'Sin descripción.'}</small>
                     ${sintoma.fijado ? '<span class="registro-fijado"> (Fijado)</span>' : ''}
                 </div>
-                <div class="registro-acciones">
-                    ${sintoma.fijado ? '' : `<button data-index="${index}" class="edit-sintoma-btn">Editar</button> <button data-index="${index}" class="delete-sintoma-btn">Eliminar</button>`}
-                </div>
+                ${!sintoma.fijado ? `<div class="registro-acciones"><button class="delete-sintoma-btn" data-id="${sintoma.id}">Eliminar</button></div>` : ''}
             `;
-            sintomasListaDiv.appendChild(div);
+            sintomasListaDiv.appendChild(itemDiv);
         });
     }
 
-    sintomasListaDiv.addEventListener('click', (e) => {
-        if (e.target.classList.contains('edit-sintoma-btn')) {
-            cargarSintomaParaEdicion(parseInt(e.target.dataset.index));
-        }
-        if (e.target.classList.contains('delete-sintoma-btn')) {
-            eliminarSintoma(parseInt(e.target.dataset.index));
-        }
-    });
-
-    function cargarSintomaParaEdicion(index) {
-        const sintoma = sintomasRegistrados[index];
-        const esOtro = !['diarrea', 'tos', 'vomito'].includes(sintoma.tipo);
-
-        if (esOtro) {
-            sintomasTipoSelect.value = 'otro';
-            sintomaOtroInput.style.display = 'block';
-            sintomaOtroInput.value = sintoma.tipo;
-        } else {
-            sintomasTipoSelect.value = sintoma.tipo;
-            sintomaOtroInput.style.display = 'none';
-            sintomaOtroInput.value = '';
-        }
-
-        sintomaHoraInput.value = sintoma.hora;
-        sintomaDescripcionInput.value = sintoma.descripcion;
-        sintomaFijarCheckbox.checked = sintoma.fijado;
-        
-        guardarSintomaBtn.textContent = 'Actualizar Síntoma';
-        indiceEditando = index;
-    }
-
-    function eliminarSintoma(index) {
-        if (confirm('¿Seguro que desea eliminar este síntoma?')) {
-            sintomasRegistrados.splice(index, 1);
-            guardarRegistros('sintomas', patientCode, sintomasRegistrados);
-            mostrarSintomas();
-        }
-    }
-
-    function mostrarFiebre() {
+    function renderFiebre() {
         fiebreListaDiv.innerHTML = '<h3>Registro de Temperatura</h3>';
-        if (fiebreRegistrada.length === 0) {
+        const registrosOrdenados = [...fiebreRegistrada].sort((a, b) => a.hora.localeCompare(b.hora));
+        
+        if (registrosOrdenados.length === 0) {
             fiebreListaDiv.innerHTML += '<p>No hay registros de temperatura.</p>';
             return;
         }
-        const registrosOrdenados = [...fiebreRegistrada].sort((a, b) => (a.hora > b.hora) ? 1 : -1);
-        registrosOrdenados.forEach((registro, originalIndex) => {
-            const div = document.createElement('div');
-            div.className = 'fiebre-item';
-            div.innerHTML = `
+        registrosOrdenados.forEach(registro => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'fiebre-item';
+            itemDiv.innerHTML = `
                 <div class="registro-detalles">
-                    Hora: ${registro.hora} - <strong>${registro.temperatura}°C</strong><br>
-                    Acción: ${registro.accion.replace('_', ' ')} ${registro.detalle ? `(${registro.detalle})` : ''}
+                    <strong>${registro.hora}</strong> - ${registro.temperatura.toFixed(1)}°C<br>
+                    <small>Acción: ${registro.accion} ${registro.detalle ? `(${registro.detalle})` : ''}</small>
                 </div>
-                <div class="registro-acciones">
-                    <button class="delete-fiebre-btn" data-hora="${registro.hora}" data-temp="${registro.temperatura}">Eliminar</button>
-                </div>
+                <div class="registro-acciones"><button class="delete-fiebre-btn" data-id="${registro.id}">Eliminar</button></div>
             `;
-            fiebreListaDiv.appendChild(div);
+            fiebreListaDiv.appendChild(itemDiv);
         });
     }
 
-    fiebreListaDiv.addEventListener('click', (e) => {
-        if (e.target.classList.contains('delete-fiebre-btn')) {
-            const hora = e.target.dataset.hora;
-            const temp = parseFloat(e.target.dataset.temp);
-            eliminarFiebre(hora, temp);
+    function renderGrafica() {
+        if (chartInstance) {
+            chartInstance.destroy();
         }
-    });
+        const registrosOrdenados = [...fiebreRegistrada].sort((a, b) => a.hora.localeCompare(b.hora));
+        const labels = registrosOrdenados.map(r => r.hora);
+        const data = registrosOrdenados.map(r => r.temperatura);
 
-    function eliminarFiebre(hora, temp) {
-        if (confirm('¿Seguro que desea eliminar este registro de fiebre?')) {
-            fiebreRegistrada = fiebreRegistrada.filter(r => r.hora !== hora || r.temperatura !== temp);
-            guardarRegistros('fiebre', patientCode, fiebreRegistrada);
-            mostrarFiebre();
-            renderizarGraficaFiebre();
-        }
-    }
-
-    function renderizarGraficaFiebre() {
-        // Destruye la gráfica anterior si existe para evitar duplicados
-        let chartStatus = Chart.getChart("fiebreChart"); 
-        if (chartStatus != undefined) {
-          chartStatus.destroy();
-        }
-
-        const registrosOrdenados = [...fiebreRegistrada].sort((a, b) => (a.hora > b.hora) ? 1 : -1);
-        const horas = registrosOrdenados.map(r => r.hora);
-        const temperaturas = registrosOrdenados.map(r => r.temperatura);
-
-        new Chart(fiebreChartCanvas, {
+        chartInstance = new Chart(fiebreChartCanvas, {
             type: 'line',
             data: {
-                labels: horas,
+                labels: labels,
                 datasets: [{
                     label: 'Temperatura (°C)',
-                    data: temperaturas,
-                    borderColor: 'rgba(255, 99, 132, 1)',
+                    data: data,
+                    borderColor: 'rgb(255, 99, 132)',
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
                     fill: true,
                     tension: 0.1
@@ -241,9 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
-                        beginAtZero: false,
                         min: 35.0,
                         max: 41.0,
                         ticks: { stepSize: 0.5 }
@@ -253,22 +168,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function limpiarFormularioSintomas() {
-        sintomasTipoSelect.value = '';
-        sintomaOtroInput.style.display = 'none';
-        sintomaOtroInput.value = '';
-        sintomaHoraInput.value = '';
-        sintomaDescripcionInput.value = '';
-        sintomaFijarCheckbox.checked = false;
-        guardarSintomaBtn.textContent = 'Guardar Síntoma';
-        indiceEditando = null;
-    }
+    // --- Lógica para Eliminar (usando event delegation) ---
+    sintomasListaDiv.addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-sintoma-btn')) {
+            const idParaEliminar = parseInt(e.target.dataset.id, 10);
+            if (confirm('¿Está seguro de que desea eliminar este síntoma?')) {
+                sintomasRegistrados = sintomasRegistrados.filter(s => s.id !== idParaEliminar);
+                localStorage.setItem(`sintomas_${patientCode}`, JSON.stringify(sintomasRegistrados));
+                renderSintomas();
+            }
+        }
+    });
 
-    function limpiarFormularioFiebre() {
-        fiebreHoraInput.value = '';
-        fiebreTemperaturaInput.value = '';
-        fiebreAccionSelect.value = 'ninguna';
-        fiebreAccionDetalleDiv.style.display = 'none';
-        fiebreDetalleInput.value = '';
-    }
+    fiebreListaDiv.addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-fiebre-btn')) {
+            const idParaEliminar = parseInt(e.target.dataset.id, 10);
+            if (confirm('¿Está seguro de que desea eliminar este registro de fiebre?')) {
+                fiebreRegistrada = fiebreRegistrada.filter(r => r.id !== idParaEliminar);
+                localStorage.setItem(`fiebre_${patientCode}`, JSON.stringify(fiebreRegistrada));
+                renderFiebre();
+                renderGrafica();
+            }
+        }
+    });
+
+    // --- Renderizado Inicial ---
+    renderSintomas();
+    renderFiebre();
+    renderGrafica();
 });
