@@ -81,41 +81,103 @@ function displayPatientInfo(data) {
 function displayMedications(data) {
     const container = document.getElementById('medication-list');
     const patientCode = localStorage.getItem('patientCode');
+    
     let allMedicationsHTML = [];
     let medicationCount = 0;
 
     for (let i = 1; i <= 10; i++) {
-        if (data[`med${i}_generico`] && data[`med${i}_generico`].trim()) {
+        if (data[`med${i}_generico`] && data[`med${i}_generico`].trim() !== '') {
             medicationCount++;
             const medId = `med${i}`;
+            const med = {
+                generico: data[`med${i}_generico`],
+                comercial: data[`med${i}_comercial`],
+                frecuencia: data[`med${i}_frecuencia`],
+                duracion: data[`med${i}_duracion`],
+                presentacion: data[`med${i}_presentacion`],
+                concentracion: data[`med${i}_concentracion`],
+                surtir: data[`med${i}_surtir`],
+                via: data[`med${i}_via`],
+                dosis: data[`med${i}_dosis`],
+                indicaciones: data[`med${i}_indicaciones`],
+                fecha_indicacion: data[`med${i}_fecha_indicacion`]
+            };
+
+            // --- LÓGICA PARA GENERAR HORARIOS ---
+            let scheduleHTML = '';
+            const frequencyString = med.frecuencia || '';
+            const match = frequencyString.match(/(\d+)/);
+            let numberOfInputs = 0;
+            if (match) {
+                const hours = parseInt(match[1], 10);
+                if (hours > 0 && hours < 24) {
+                    numberOfInputs = Math.floor(24 / hours);
+                } else if (hours === 24) {
+                    numberOfInputs = 1;
+                }
+            }
+            
+            if (numberOfInputs > 0) {
+                const savedSchedule = JSON.parse(localStorage.getItem(`${patientCode}_${medId}_schedule`)) || {};
+                let timeInputsHTML = '';
+                for (let j = 0; j < numberOfInputs; j++) {
+                    const savedTime = savedSchedule[j] || '';
+                    timeInputsHTML += `<input type="time" class="time-input" data-index="${j}" value="${savedTime}">`;
+                }
+                scheduleHTML = `
+                    <div class="schedule-container">
+                        <strong>Horarios de administración:</strong>
+                        <div class="time-inputs-grid">${timeInputsHTML}</div>
+                    </div>
+                `;
+            }
+            // --- FIN DE LÓGICA DE HORARIOS ---
+
             const savedProgress = JSON.parse(localStorage.getItem(`${patientCode}_${medId}_progress`)) || {};
             const savedStatus = localStorage.getItem(`${patientCode}_${medId}_status`);
+            
             let progressChecksHTML = '';
-            const duration = parseInt(data[`med${i}_duracion`]) || 0;
+            const duration = parseInt(med.duracion) || 0;
             for (let day = 1; day <= duration; day++) {
-                progressChecksHTML += `<label><input type="checkbox" data-day="${day}" ${savedProgress[day] ? 'checked' : ''}><span>${day}</span></label>`;
+                const isChecked = savedProgress[day] ? 'checked' : '';
+                progressChecksHTML += `<label><input type="checkbox" data-day="${day}" ${isChecked}><span>${day}</span></label>`;
             }
+
+            const isFinished = savedStatus === 'finished' ? 'checked' : '';
+            const isSuspended = savedStatus === 'suspended' ? 'checked' : '';
             const cardStatusClass = savedStatus ? `status-${savedStatus}` : '';
-            allMedicationsHTML.push(`
+
+            const medicationHTML = `
                 <article class="medication-item card ${cardStatusClass}" id="${medId}">
-                    <div class="medication-header"><h4>${data[`med${i}_generico`]} (${data[`med${i}_comercial`]})</h4><small>Indicado el: ${data[`med${i}_fecha_indicacion`]}</small></div>
+                    <div class="medication-header"><h4>${med.generico} (${med.comercial || 'N/A'})</h4><small>Indicado el: ${med.fecha_indicacion || 'N/A'}</small></div>
                     <div class="medication-details">
-                        <p><strong>Presentación:</strong> ${data[`med${i}_presentacion`]}</p><p><strong>Concentración:</strong> ${data[`med${i}_concentracion`]}</p>
-                        <p><strong>Surtir:</strong> ${data[`med${i}_surtir`]}</p><p><strong>Vía:</strong> ${data[`med${i}_via`]}</p>
-                        <p><strong>Dosis:</strong> ${data[`med${i}_dosis`]}</p><p><strong>Frecuencia:</strong> ${data[`med${i}_frecuencia`]}</p>
+                        <p><strong>Presentación:</strong> ${med.presentacion || 'N/A'}</p><p><strong>Concentración:</strong> ${med.concentracion || 'N/A'}</p>
+                        <p><strong>Surtir:</strong> ${med.surtir || 'N/A'}</p><p><strong>Vía:</strong> ${med.via || 'N/A'}</p>
+                        <p><strong>Dosis:</strong> ${med.dosis || 'N/A'}</p><p><strong>Frecuencia:</strong> ${med.frecuencia || 'N/A'}</p>
                     </div>
-                    <p><strong>Duración:</strong> ${data[`med${i}_duracion`]} días</p><p><strong>Indicaciones:</strong> ${data[`med${i}_indicaciones`]}</p>
-                    <div class="progress-tracker"><strong>Avance:</strong><div class="progress-checks">${progressChecksHTML}</div></div>
+                    <p><strong>Duración:</strong> ${med.duracion || 'N/A'} días</p><p><strong>Indicaciones Especiales:</strong> ${med.indicaciones || 'Ninguna'}</p>
+                    
+                    ${scheduleHTML} 
+
+                    <div class="progress-tracker"><strong>Avance del tratamiento (días):</strong><div class="progress-checks">${progressChecksHTML}</div></div>
                     <div class="treatment-status">
-                        <strong>Estado:</strong>
-                        <input type="radio" name="status_${medId}" value="finished" ${savedStatus === 'finished' ? 'checked' : ''}><label>✅ Terminado</label>
-                        <input type="radio" name="status_${medId}" value="suspended" ${savedStatus === 'suspended' ? 'checked' : ''}><label>❌ Suspendido</label>
+                        <strong>Estado del Tratamiento:</strong>
+                        <input type="radio" name="status_${medId}" id="status_finished_${i}" value="finished" ${isFinished}><label for="status_finished_${i}">✅ Terminado</label>
+                        <input type="radio" name="status_${medId}" id="status_suspended_${i}" value="suspended" ${isSuspended}><label for="status_suspended_${i}">❌ Suspendido</label>
                     </div>
-                </article>`);
+                </article>
+            `;
+            allMedicationsHTML.push(medicationHTML);
         }
     }
-    container.innerHTML = medicationCount > 0 ? allMedicationsHTML.join('') : `<div class="card"><p>No hay medicamentos indicados.</p></div>`;
+
+    if (medicationCount === 0) {
+        container.innerHTML = `<div class="card"><p>No hay medicamentos indicados por el momento.</p></div>`;
+    } else {
+        container.innerHTML = allMedicationsHTML.join('');
+    }
 }
+
 
 // --- FUNCIONES DE UTILIDAD Y EVENTOS ---
 
