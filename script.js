@@ -221,11 +221,12 @@ function setupDynamicEventListeners() {
     const patientCode = localStorage.getItem('patientCode');
     if (!medList || !patientCode) return;
 
-    medList.addEventListener('change', (event) => {
+    medList.addEventListener('change', function(event) {
         const medicationCard = event.target.closest('.medication-item');
         if (!medicationCard) return;
         const medId = medicationCard.id;
 
+        // --- GUARDAR PROGRESO DE DÍAS ---
         if (event.target.type === 'checkbox') {
             const day = event.target.dataset.day;
             const progressKey = `${patientCode}_${medId}_progress`;
@@ -234,13 +235,27 @@ function setupDynamicEventListeners() {
             localStorage.setItem(progressKey, JSON.stringify(savedProgress));
         }
 
-        if (event.target.type === 'radio') {
-            localStorage.setItem(`${patientCode}_${medId}_status`, event.target.value);
+        // --- GUARDAR ESTADO DEL TRATAMIENTO ---
+        if (event.target.type === 'radio' && event.target.name.startsWith('status_')) {
+            const statusKey = `${patientCode}_${medId}_status`;
+            localStorage.setItem(statusKey, event.target.value);
             medicationCard.classList.remove('status-finished', 'status-suspended');
-            if (event.target.checked) medicationCard.classList.add(`status-${event.target.value}`);
+            if (event.target.checked) {
+                medicationCard.classList.add(`status-${event.target.value}`);
+            }
+        }
+
+        // --- GUARDAR HORARIOS DE MEDICAMENTOS ---
+        if (event.target.classList.contains('time-input')) {
+            const index = event.target.dataset.index;
+            const scheduleKey = `${patientCode}_${medId}_schedule`;
+            const savedSchedule = JSON.parse(localStorage.getItem(scheduleKey)) || {};
+            savedSchedule[index] = event.target.value;
+            localStorage.setItem(scheduleKey, JSON.stringify(savedSchedule));
         }
     });
 }
+
 
 function setupLogoutButton() {
     document.getElementById('logout-btn').addEventListener('click', () => {
