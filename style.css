@@ -348,3 +348,28 @@ input[id^="status_suspended"]:checked ~ label[for^="status_suspended"] {
         font-size: 1.1em;
     }
 }
+/* --- Estilos para el Contenedor de Horarios --- */
+.schedule-container {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.schedule-container strong {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.time-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.time-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+}
