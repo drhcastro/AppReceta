@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const guardarSintomaBtn = document.getElementById('guardar-sintoma');
     const guardarFiebreBtn = document.getElementById('guardar-fiebre');
     const guardarGraficaImagenBtn = document.getElementById('guardar-grafica-imagen');
+    const guardarRegistrosImagenBtn = document.getElementById('guardar-registros-imagen');
     const regresarMedicamentosBtn = document.getElementById('regresar-medicamentos');
     const sintomasListaDiv = document.getElementById('sintomas-lista');
     const fiebreListaDiv = document.getElementById('fiebre-lista');
@@ -87,6 +88,27 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             alert('No hay datos en la gráfica para guardar.');
         }
+    });
+
+    guardarRegistrosImagenBtn.addEventListener('click', () => {
+        const containerToCapture = document.querySelector('.container');
+        const buttonsToHide = document.querySelector('.button-container');
+
+        // Oculta los botones para que no salgan en la imagen
+        buttonsToHide.style.display = 'none';
+
+        html2canvas(containerToCapture, {
+            useCORS: true,
+            backgroundColor: '#f4f4f4' // Color de fondo de la página
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Registro_Sintomas_${patientCode}_${new Date().toISOString().slice(0, 10)}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+
+            // Vuelve a mostrar los botones después de tomar la captura
+            buttonsToHide.style.display = 'block';
+        });
     });
 
     // --- Funciones de Renderizado ---
