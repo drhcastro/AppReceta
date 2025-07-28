@@ -1,83 +1,93 @@
-// script.js (Versión Final Definitiva)
+// script.js (Versión Final Unificada)
 
+// URL de la base de datos en Google Sheets
 const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCh0jOiaAGNdoytpJ1sU8W-tJHO6ef1Mmgu4JpMA7oU3KvAvWNmioFlLJ4XzHH_Tgk1-wPAvpw7YaM/pub?gid=0&single=true&output=csv';
 
-// --- PUNTO DE ENTRADA PRINCIPAL ---
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('app-content')) {
-        loadPatientData();
-    }
-});
+// --- FUNCIONES PRINCIPALES DE CARGA Y VISUALIZACIÓN ---
 
-// --- FUNCIONES DE CARGA Y VISUALIZACIÓN ---
-
+/**
+ * Busca y convierte los datos del archivo CSV de Google Sheets.
+ */
 async function fetchData() {
     try {
         const response = await fetch(GOOGLE_SHEET_URL);
-        if (!response.ok) throw new Error('Respuesta de red no fue exitosa.');
+        if (!response.ok) {
+            throw new Error('Error al cargar la base de datos.');
+        }
         const text = await response.text();
-        return Papa.parse(text, { header: true, skipEmptyLines: true }).data;
+        return Papa.parse(text, { header: true }).data;
     } catch (error) {
-        console.error('Error crítico en fetchData:', error);
+        console.error('Error en fetchData:', error);
         return null;
     }
 }
 
+/**
+ * Carga y muestra toda la información en la página principal de la app.
+ */
 async function loadPatientData() {
     const loader = document.getElementById('loader');
     const patientCode = localStorage.getItem('patientCode');
-
+    
     if (!patientCode) {
-        loader.textContent = 'Error: Código de paciente no encontrado. Regrese a la página de inicio.';
+        loader.textContent = 'Error: No se encontró código de paciente. Por favor, vuelve a la página de inicio.';
         return;
     }
 
-    try {
-        const data = await fetchData();
-        if (!data) {
-            loader.textContent = 'No se pudieron cargar los datos. Verifique la conexión a internet.';
-            return;
-        }
+    const data = await fetchData();
+    if (!data) {
+        loader.textContent = 'No se pudieron cargar los datos. Revisa la conexión o el enlace de la base de datos.';
+        return;
+    }
 
-        const patientData = data.find(row => row.codigo_unico && row.codigo_unico.trim().toUpperCase() === patientCode);
+    const patientData = data.find(row => row.codigo_unico && row.codigo_unico.trim().toUpperCase() === patientCode);
 
-        if (patientData) {
-            loader.style.display = 'none'; // Oculta el cargador ANTES de procesar
+    if (patientData) {
+        loader.style.display = 'none';
+        displayPatientInfo(patientData);
+        displayMedications(patientData);
+        setupActionButtons(patientData);
+        
+        setupDynamicEventListeners();
+        setupLogoutButton();
 
-            // Guarda los datos para la página de receta
-            localStorage.setItem('currentPatientData', JSON.stringify(patientData));
+        document.getElementById('patient-info').style.display = 'block';
+        document.getElementById('diagnosis-section').style.display = 'block';
 
-            displayPatientInfo(patientData);
-            displayMedications(patientData);
-            setupActionButtons(patientData);
-            setupDynamicEventListeners();
-            setupLogoutButton();
-
-            document.getElementById('patient-info').style.display = 'block';
-            document.getElementById('diagnosis-section').style.display = 'block';
-        } else {
-            loader.textContent = `Código "${patientCode}" no encontrado. Verifique que sea correcto.`;
-        }
-    } catch (error) {
-        console.error("Error en loadPatientData:", error);
-        loader.textContent = 'Ocurrió un error inesperado al cargar la información.';
+    } else {
+        loader.textContent = `Código "${patientCode}" no encontrado. Verifica que sea correcto.`;
     }
 }
 
+/**
+ * Muestra la información personal del paciente, incluyendo las nuevas indicaciones.
+ */
 function displayPatientInfo(data) {
     document.getElementById('patient-name').textContent = data.nombre_completo || 'N/A';
     document.getElementById('patient-dob').textContent = data.fecha_nacimiento || 'N/A';
     document.getElementById('patient-weight').textContent = `${data.peso_kg || 'N/A'} kg`;
     document.getElementById('patient-diagnosis').textContent = data.diagnostico || 'No especificado.';
-    if (data.alergias && data.alergias.trim()) {
+
+    if (data.alergias && data.alergias.trim() !== '') {
         document.getElementById('patient-allergies').textContent = `ALERGIAS: ${data.alergias}`;
     } else {
         document.getElementById('patient-allergies').style.display = 'none';
     }
+
+    const indicationsSection = document.getElementById('doctor-indications-section');
+    const indicationsP = document.getElementById('doctor-indications');
+    if (data.indicaciones_medico && data.indicaciones_medico.trim() !== '') {
+        indicationsP.textContent = data.indicaciones_medico;
+        indicationsSection.style.display = 'block';
+    }
+
     document.getElementById('patient-age').textContent = calculateAge(data.fecha_nacimiento);
     document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
+/**
+ * Muestra la lista de medicamentos, incluyendo los campos de horario.
+ */
 function displayMedications(data) {
     const container = document.getElementById('medication-list');
     const patientCode = localStorage.getItem('patientCode');
@@ -103,7 +113,6 @@ function displayMedications(data) {
                 fecha_indicacion: data[`med${i}_fecha_indicacion`]
             };
 
-            // --- LÓGICA PARA GENERAR HORARIOS ---
             let scheduleHTML = '';
             const frequencyString = med.frecuencia || '';
             const match = frequencyString.match(/(\d+)/);
@@ -124,14 +133,8 @@ function displayMedications(data) {
                     const savedTime = savedSchedule[j] || '';
                     timeInputsHTML += `<input type="time" class="time-input" data-index="${j}" value="${savedTime}">`;
                 }
-                scheduleHTML = `
-                    <div class="schedule-container">
-                        <strong>Horarios de administración:</strong>
-                        <div class="time-inputs-grid">${timeInputsHTML}</div>
-                    </div>
-                `;
+                scheduleHTML = `<div class="schedule-container"><strong>Horarios de administración:</strong><div class="time-inputs-grid">${timeInputsHTML}</div></div>`;
             }
-            // --- FIN DE LÓGICA DE HORARIOS ---
 
             const savedProgress = JSON.parse(localStorage.getItem(`${patientCode}_${medId}_progress`)) || {};
             const savedStatus = localStorage.getItem(`${patientCode}_${medId}_status`);
@@ -156,9 +159,7 @@ function displayMedications(data) {
                         <p><strong>Dosis:</strong> ${med.dosis || 'N/A'}</p><p><strong>Frecuencia:</strong> ${med.frecuencia || 'N/A'}</p>
                     </div>
                     <p><strong>Duración:</strong> ${med.duracion || 'N/A'} días</p><p><strong>Indicaciones Especiales:</strong> ${med.indicaciones || 'Ninguna'}</p>
-                    
-                    ${scheduleHTML} 
-
+                    ${scheduleHTML}
                     <div class="progress-tracker"><strong>Avance del tratamiento (días):</strong><div class="progress-checks">${progressChecksHTML}</div></div>
                     <div class="treatment-status">
                         <strong>Estado del Tratamiento:</strong>
@@ -179,41 +180,71 @@ function displayMedications(data) {
 }
 
 
-// --- FUNCIONES DE UTILIDAD Y EVENTOS ---
+// --- LÓGICA PARA PÁGINA DE RECETA IMPRIMIBLE ---
+
+async function populateRecetaPage() {
+    const patientCode = localStorage.getItem('patientCode');
+    if (!patientCode) {
+        document.body.innerHTML = 'Error: No se encontró código de paciente. Vuelva a la app e inténtelo de nuevo.';
+        return;
+    }
+
+    const data = await fetchData();
+    if (!data) {
+        document.body.innerHTML = 'Error al cargar los datos.';
+        return;
+    }
+
+    const patientData = data.find(row => row.codigo_unico && row.codigo_unico.trim().toUpperCase() === patientCode);
+
+    if (patientData) {
+        document.getElementById('receta-paciente').textContent = patientData.nombre_completo || '';
+        document.getElementById('receta-dob').textContent = patientData.fecha_nacimiento || '';
+        document.getElementById('receta-diagnostico').textContent = patientData.diagnostico || 'No especificado.';
+        document.getElementById('receta-fecha').textContent = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+
+        const medList = document.getElementById('receta-medicamentos');
+        medList.innerHTML = '';
+        let medCount = 0;
+        for (let i = 1; i <= 10; i++) {
+            if (patientData[`med${i}_generico`] && patientData[`med${i}_generico`].trim() !== '') {
+                medCount++;
+                const medItem = document.createElement('li');
+                medItem.innerHTML = `
+                    <strong>${patientData[`med${i}_generico`]} (${patientData[`med${i}_comercial`]})</strong> - ${patientData[`med${i}_presentacion`]} ${patientData[`med${i}_concentracion`]}<br>
+                    Surtir: ${patientData[`med${i}_surtir`]}<br>
+                    Indicaciones: ${patientData[`med${i}_dosis`]} ${patientData[`med${i}_via`]} cada ${patientData[`med${i}_frecuencia`]} por ${patientData[`med${i}_duracion`]} días.<br>
+                    <i>${patientData[`med${i}_indicaciones`]}</i>
+                `;
+                medList.appendChild(medItem);
+            }
+        }
+        if (medCount === 0) {
+            medList.innerHTML = '<li>No hay medicamentos indicados.</li>';
+        }
+    } else {
+        document.body.innerHTML = `Error: Paciente con código "${patientCode}" no encontrado.`;
+    }
+}
+
+
+// --- FUNCIONES DE CONFIGURACIÓN Y UTILIDADES ---
 
 function calculateAge(dobString) {
-    if (!dobString || typeof dobString !== 'string') return 'N/A';
-    const parts = dobString.trim().split(/[/|-]/);
-    if (parts.length !== 3) return 'Fecha inválida';
+    if (!dobString || typeof dobString !== 'string') return 'Fecha no proporcionada.';
+    const cleanedDobString = dobString.trim();
+    const parts = cleanedDobString.split(/[/|-]/);
+    if (parts.length !== 3) return 'Formato de fecha inválido.';
     const day = parseInt(parts[0], 10), month = parseInt(parts[1], 10) - 1, year = parseInt(parts[2], 10);
-    if (isNaN(day) || isNaN(month) || isNaN(year)) return 'Fecha inválida';
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return 'Fecha contiene caracteres no válidos.';
     const dob = new Date(year, month, day);
-    if (dob.getFullYear() !== year || dob.getMonth() !== month || dob.getDate() !== day) return "Fecha no existe";
+    if (dob.getFullYear() !== year || dob.getMonth() !== month || dob.getDate() !== day) return "La fecha no existe.";
     const today = new Date();
-    if (dob > today) return "Fecha futura";
+    if (dob > today) return "Fecha de nacimiento en el futuro.";
     let ageYears = today.getFullYear() - dob.getFullYear(), ageMonths = today.getMonth() - dob.getMonth(), ageDays = today.getDate() - dob.getDate();
     if (ageDays < 0) { ageMonths--; ageDays += new Date(today.getFullYear(), today.getMonth(), 0).getDate(); }
     if (ageMonths < 0) { ageYears--; ageMonths += 12; }
     return `${ageYears} años, ${ageMonths} meses y ${ageDays} días`;
-}
-
-function setupActionButtons(data) {
-    const expedienteBtn = document.getElementById('expediente-btn');
-    if (data.enlace_expediente) expedienteBtn.href = data.enlace_expediente;
-    else expedienteBtn.style.display = 'none';
-
-    const telegramBtn = document.getElementById('telegram-btn');
-    if (data.enlace_telegram) telegramBtn.href = data.enlace_telegram;
-    else telegramBtn.style.display = 'none';
-
-    document.getElementById('save-image-btn').addEventListener('click', () => {
-        html2canvas(document.getElementById('app-content'), { useCORS: true, backgroundColor: '#f0f4f8' }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `Avance_AppReceta_${new Date().toISOString().slice(0,10)}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-        });
-    });
 }
 
 function setupDynamicEventListeners() {
@@ -226,7 +257,6 @@ function setupDynamicEventListeners() {
         if (!medicationCard) return;
         const medId = medicationCard.id;
 
-        // --- GUARDAR PROGRESO DE DÍAS ---
         if (event.target.type === 'checkbox') {
             const day = event.target.dataset.day;
             const progressKey = `${patientCode}_${medId}_progress`;
@@ -235,7 +265,6 @@ function setupDynamicEventListeners() {
             localStorage.setItem(progressKey, JSON.stringify(savedProgress));
         }
 
-        // --- GUARDAR ESTADO DEL TRATAMIENTO ---
         if (event.target.type === 'radio' && event.target.name.startsWith('status_')) {
             const statusKey = `${patientCode}_${medId}_status`;
             localStorage.setItem(statusKey, event.target.value);
@@ -244,8 +273,7 @@ function setupDynamicEventListeners() {
                 medicationCard.classList.add(`status-${event.target.value}`);
             }
         }
-
-        // --- GUARDAR HORARIOS DE MEDICAMENTOS ---
+        
         if (event.target.classList.contains('time-input')) {
             const index = event.target.dataset.index;
             const scheduleKey = `${patientCode}_${medId}_schedule`;
@@ -256,11 +284,56 @@ function setupDynamicEventListeners() {
     });
 }
 
+function setupActionButtons(data) {
+    const expedienteBtn = document.getElementById('expediente-btn');
+    if (data.enlace_expediente) {
+        expedienteBtn.href = data.enlace_expediente;
+    } else {
+        expedienteBtn.style.display = 'none';
+    }
 
-function setupLogoutButton() {
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        localStorage.removeItem('patientCode');
-        localStorage.removeItem('currentPatientData'); // Limpia también los datos del paciente
-        window.location.href = 'index.html';
+    const telegramBtn = document.getElementById('telegram-btn');
+    if (data.enlace_telegram) {
+        telegramBtn.href = data.enlace_telegram;
+    } else {
+        telegramBtn.style.display = 'none';
+    }
+
+    document.getElementById('save-image-btn').addEventListener('click', () => {
+        html2canvas(document.getElementById('app-content'), { useCORS: true, backgroundColor: '#f0f4f8' }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Avance_AppReceta_${new Date().toISOString().slice(0,10)}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        });
     });
 }
+
+function setupLogoutButton() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('patientCode');
+            window.location.href = 'index.html';
+        });
+    }
+}
+
+
+// --- PUNTO DE ENTRADA PRINCIPAL DE LA APP ---
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Revisa en qué página estamos y ejecuta la función correspondiente
+    if (document.querySelector('.page')) { 
+        populateRecetaPage();
+    } 
+    else if (document.getElementById('app-content')) { 
+        // Carga PapaParse y luego los datos del paciente
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js';
+        script.onload = () => {
+            loadPatientData();
+        };
+        document.head.appendChild(script);
+    }
+});

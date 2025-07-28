@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-   </head>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seguimiento - AppReceta</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="AppReceta">
-<link rel="apple-touch-icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png">
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png" type="image/png">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AppReceta">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
@@ -40,6 +39,11 @@
             <p id="patient-diagnosis"></p>
         </section>
 
+        <section id="doctor-indications-section" class="card" style="display:none;">
+            <h3>Indicaciones de tu Médico</h3>
+            <p id="doctor-indications"></p>
+        </section>
+
         <section id="medications-section">
             <h3>Medicamentos Indicados</h3>
             <div id="medication-list"></div>
@@ -48,14 +52,15 @@
         <section id="action-buttons" class="card">
             <h3>Acciones Rápidas</h3>
             <div class="button-grid">
+                <a href="sintomas.html" class="action-button">Registro de Síntomas</a>
+                <a href="https://waitwhile.com/accounts/drhectorcastro?kiosk=true" target="_blank" class="action-button">Programar Nueva Cita</a>
                 <a href="urgencia.html" class="action-button urgency">¿Tienes una Urgencia?</a>
+                <a href="receta.html" target="_blank" class="action-button">Generar Receta Médica</a>
                 <a id="expediente-btn" href="#" target="_blank" class="action-button">Ver Expediente</a>
                 <a id="telegram-btn" href="#" target="_blank" class="action-button">Chat Grupal (Telegram)</a>
                 <button id="save-image-btn" class="action-button">Guardar Avance en Imagen</button>
                 <a href="pago.html" class="action-button payment">Realizar Pago</a>
                 <button id="logout-btn" class="action-button">Cambiar de Paciente</button>
-                <a href="receta.html" target="_blank" class="action-button">Generar Receta Médica</a>
-                <a href="sintomas.html" class="action-button">Registro de Síntomas</a>
             </div>
         </section>
         
