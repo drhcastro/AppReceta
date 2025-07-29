@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Síntomas</title>
+    <title> 🤒 Registro de Síntomas</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="sintomas.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -20,13 +20,13 @@
             <h2>Nuevo Síntoma</h2>
             <form id="sintoma-form" class="form-grid">
                 <div>
-                    <label for="sintoma-tipo">Síntoma:</label>
+                    <label for="sintoma-tipo">🧸Síntoma:</label>
                     <select id="sintoma-tipo">
                         <option value="">Seleccionar</option>
-                        <option value="Diarrea">Diarrea</option>
-                        <option value="Tos">Tos</option>
-                        <option value="Vómito">Vómito</option>
-                        <option value="otro">Otro</option>
+                        <option value="Diarrea">🤢Diarrea</option>
+                        <option value="Tos">🤧Tos</option>
+                        <option value="Vómito">🤮Vómito</option>
+                        <option value="otro">🤕Otro</option>
                     </select>
                     <input type="text" id="sintoma-otro" placeholder="Otro síntoma (opcional)" style="display: none;">
                 </div>
@@ -40,16 +40,16 @@
                 </div>
                 <div>
                     <input type="checkbox" id="sintoma-fijar">
-                    <label for="sintoma-fijar">Fijar registro (no editar)</label>
+                    <label for="sintoma-fijar">Selecciona para evitar que se borre</label>
                 </div>
-                <button id="guardar-sintoma" type="button">Guardar Síntoma</button>
+                <button id="guardar-sintoma" type="button">✔️ Guardar Síntoma</button>
             </form>
             <div id="sintomas-lista">
                 </div>
         </section>
 
         <section class="card">
-            <h2>Registro de Fiebre</h2>
+            <h2>🌡 Registro de Fiebre</h2>
             <form id="fiebre-form" class="form-grid">
                 <div>
                     <label for="fiebre-hora">Hora:</label>
@@ -71,23 +71,23 @@
                     <label for="fiebre-detalle-input">Detalle (medicamento o medio físico):</label>
                     <input type="text" id="fiebre-detalle-input" placeholder="Ej: Paracetamol, compresas, etc.">
                 </div>
-                <button id="guardar-fiebre" type="button">Guardar Temperatura</button>
+                <button id="guardar-fiebre" type="button">✔️ Guardar Temperatura</button>
             </form>
             <div id="fiebre-lista">
                 </div>
         </section>
 
         <section id="grafica-fiebre" class="card">
-            <h2>Gráfica de Temperatura</h2>
+            <h2> 📈 Gráfica de Temperatura</h2>
             <div style="height:250px;">
                 <canvas id="fiebreChart"></canvas>
             </div>
-            <button id="guardar-grafica-imagen" type="button" class="action-button">Guardar Gráfica como Imagen</button>
+            <button id="guardar-grafica-imagen" type="button" class="action-button">📸 Guardar Gráfica</button>
         </section>
 
         <div class="button-container">
-            <button id="guardar-registros-imagen" type="button" class="action-button">Guardar Registro en Imagen</button>
-            <button id="regresar-medicamentos" type="button" class="action-button">Regresar a Medicamentos</button>
+            <button id="guardar-registros-imagen" type="button" class="action-button">📸 Guardar como imagen</button>
+            <button id="regresar-medicamentos" type="button" class="action-button">⬅️ Regresar a Medicamentos</button>
         </div>
     </div>
 
