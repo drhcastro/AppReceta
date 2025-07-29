@@ -1,19 +1,14 @@
-// script.js (Versión Final Unificada)
+// script.js (Versión Final Corregida)
 
 // URL de la base de datos en Google Sheets
 const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCh0jOiaAGNdoytpJ1sU8W-tJHO6ef1Mmgu4JpMA7oU3KvAvWNmioFlLJ4XzHH_Tgk1-wPAvpw7YaM/pub?gid=0&single=true&output=csv';
 
 // --- FUNCIONES PRINCIPALES DE CARGA Y VISUALIZACIÓN ---
 
-/**
- * Busca y convierte los datos del archivo CSV de Google Sheets.
- */
 async function fetchData() {
     try {
         const response = await fetch(GOOGLE_SHEET_URL);
-        if (!response.ok) {
-            throw new Error('Error al cargar la base de datos.');
-        }
+        if (!response.ok) { throw new Error('Error al cargar la base de datos.'); }
         const text = await response.text();
         return Papa.parse(text, { header: true }).data;
     } catch (error) {
@@ -22,9 +17,6 @@ async function fetchData() {
     }
 }
 
-/**
- * Carga y muestra toda la información en la página principal de la app.
- */
 async function loadPatientData() {
     const loader = document.getElementById('loader');
     const patientCode = localStorage.getItem('patientCode');
@@ -36,7 +28,7 @@ async function loadPatientData() {
 
     const data = await fetchData();
     if (!data) {
-        loader.textContent = 'No se pudieron cargar los datos. Revisa la conexión o el enlace de la base de datos.';
+        loader.textContent = 'No se pudieron cargar los datos.';
         return;
     }
 
@@ -47,21 +39,16 @@ async function loadPatientData() {
         displayPatientInfo(patientData);
         displayMedications(patientData);
         setupActionButtons(patientData);
-        
         setupDynamicEventListeners();
         setupLogoutButton();
 
         document.getElementById('patient-info').style.display = 'block';
         document.getElementById('diagnosis-section').style.display = 'block';
-
     } else {
         loader.textContent = `Código "${patientCode}" no encontrado. Verifica que sea correcto.`;
     }
 }
 
-/**
- * Muestra la información personal del paciente, incluyendo las nuevas indicaciones.
- */
 function displayPatientInfo(data) {
     document.getElementById('patient-name').textContent = data.nombre_completo || 'N/A';
     document.getElementById('patient-dob').textContent = data.fecha_nacimiento || 'N/A';
@@ -75,9 +62,8 @@ function displayPatientInfo(data) {
     }
 
     const indicationsSection = document.getElementById('doctor-indications-section');
-    const indicationsP = document.getElementById('doctor-indications');
     if (data.indicaciones_medico && data.indicaciones_medico.trim() !== '') {
-        indicationsP.textContent = data.indicaciones_medico;
+        document.getElementById('doctor-indications').textContent = data.indicaciones_medico;
         indicationsSection.style.display = 'block';
     } else {
         indicationsSection.style.display = 'none';
@@ -87,9 +73,6 @@ function displayPatientInfo(data) {
     document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-/**
- * Muestra la lista de medicamentos, incluyendo los campos de horario.
- */
 function displayMedications(data) {
     const container = document.getElementById('medication-list');
     const patientCode = localStorage.getItem('patientCode');
@@ -181,21 +164,12 @@ function displayMedications(data) {
     }
 }
 
-
-// --- LÓGICA PARA PÁGINA DE RECETA IMPRIMIBLE ---
-
 async function populateRecetaPage() {
     const patientCode = localStorage.getItem('patientCode');
-    if (!patientCode) {
-        document.body.innerHTML = 'Error: No se encontró código de paciente. Vuelva a la app e inténtelo de nuevo.';
-        return;
-    }
+    if (!patientCode) { document.body.innerHTML = 'Error: Código de paciente no encontrado.'; return; }
 
     const data = await fetchData();
-    if (!data) {
-        document.body.innerHTML = 'Error al cargar los datos.';
-        return;
-    }
+    if (!data) { document.body.innerHTML = 'Error al cargar los datos.'; return; }
 
     const patientData = data.find(row => row.codigo_unico && row.codigo_unico.trim().toUpperCase() === patientCode);
 
@@ -212,23 +186,15 @@ async function populateRecetaPage() {
             if (patientData[`med${i}_generico`] && patientData[`med${i}_generico`].trim() !== '') {
                 medCount++;
                 const medItem = document.createElement('li');
-                medItem.innerHTML = `
-                    <strong>${patientData[`med${i}_generico`]} (${patientData[`med${i}_comercial`]})</strong> - ${patientData[`med${i}_presentacion`]} ${patientData[`med${i}_concentracion`]}<br>
-                    Surtir: ${patientData[`med${i}_surtir`]}<br>
-                    Indicaciones: ${patientData[`med${i}_dosis`]} ${patientData[`med${i}_via`]} cada ${patientData[`med${i}_frecuencia`]} por ${patientData[`med${i}_duracion`]} días.<br>
-                    <i>${patientData[`med${i}_indicaciones`]}</i>
-                `;
+                medItem.innerHTML = `<strong>${patientData[`med${i}_generico`]} (${patientData[`med${i}_comercial`]})</strong> - ${patientData[`med${i}_presentacion`]} ${patientData[`med${i}_concentracion`]}<br>Surtir: ${patientData[`med${i}_surtir`]}<br>Indicaciones: ${patientData[`med${i}_dosis`]} ${patientData[`med${i}_via`]} cada ${patientData[`med${i}_frecuencia`]} por ${patientData[`med${i}_duracion`]} días.<br><i>${patientData[`med${i}_indicaciones`]}</i>`;
                 medList.appendChild(medItem);
             }
         }
-        if (medCount === 0) {
-            medList.innerHTML = '<li>No hay medicamentos indicados.</li>';
-        }
+        if (medCount === 0) { medList.innerHTML = '<li>No hay medicamentos indicados.</li>'; }
     } else {
         document.body.innerHTML = `Error: Paciente con código "${patientCode}" no encontrado.`;
     }
 }
-
 
 // --- FUNCIONES DE CONFIGURACIÓN Y UTILIDADES ---
 
@@ -271,9 +237,7 @@ function setupDynamicEventListeners() {
             const statusKey = `${patientCode}_${medId}_status`;
             localStorage.setItem(statusKey, event.target.value);
             medicationCard.classList.remove('status-finished', 'status-suspended');
-            if (event.target.checked) {
-                medicationCard.classList.add(`status-${event.target.value}`);
-            }
+            if (event.target.checked) { medicationCard.classList.add(`status-${event.target.value}`); }
         }
         
         if (event.target.classList.contains('time-input')) {
@@ -287,26 +251,22 @@ function setupDynamicEventListeners() {
 }
 
 function setupActionButtons(data) {
-    const expedienteBtn = document.getElementById('expediente-btn');
-    if (data.enlace_expediente && data.enlace_expediente.trim() !== '') {
-        expedienteBtn.href = data.enlace_expediente;
-    } else {
-        expedienteBtn.style.display = 'none';
-    }
+    // Función para manejar cada botón y evitar repetición de código
+    const configureButton = (id, linkData) => {
+        const button = document.getElementById(id);
+        if (button) {
+            if (linkData && linkData.trim() !== '') {
+                button.href = linkData;
+                button.style.display = 'block';
+            } else {
+                button.style.display = 'none';
+            }
+        }
+    };
 
-    const telegramBtn = document.getElementById('telegram-btn');
-    if (data.enlace_telegram && data.enlace_telegram.trim() !== '') {
-        telegramBtn.href = data.enlace_telegram;
-    } else {
-        telegramBtn.style.display = 'none';
-    }
-
-    const planBtn = document.getElementById('plan-alimentacion-btn');
-    if (data.enlace_plan_alimentacion && data.enlace_plan_alimentacion.trim() !== '') {
-        planBtn.href = data.enlace_plan_alimentacion;
-    } else {
-        planBtn.style.display = 'none';
-    }
+    configureButton('expediente-btn', data.enlace_expediente);
+    configureButton('telegram-btn', data.enlace_telegram);
+    configureButton('plan-alimentacion-btn', data.enlace_plan_alimentacion);
 
     document.getElementById('save-image-btn').addEventListener('click', () => {
         html2canvas(document.getElementById('app-content'), { useCORS: true, backgroundColor: '#f0f4f8' }).then(canvas => {
@@ -328,25 +288,20 @@ function setupLogoutButton() {
     }
 }
 
-
 // --- PUNTO DE ENTRADA PRINCIPAL DE LA APP ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Revisa en qué página estamos y ejecuta la función correspondiente
+    // Si la librería PapaParse ya está cargada, ejecuta la lógica.
+    // Esto es más simple y robusto que la carga dinámica de scripts.
+    if (typeof Papa === 'undefined') {
+        console.error('PapaParse no está cargado. Asegúrate de incluir el script en tu HTML.');
+        return;
+    }
+
     if (document.querySelector('.page')) { 
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js';
-        script.onload = () => {
-            populateRecetaPage();
-        };
-        document.head.appendChild(script);
+        populateRecetaPage();
     } 
     else if (document.getElementById('app-content')) { 
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js';
-        script.onload = () => {
-            loadPatientData();
-        };
-        document.head.appendChild(script);
+        loadPatientData();
     }
 });
