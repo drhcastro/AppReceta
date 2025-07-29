@@ -299,6 +299,18 @@ function setupActionButtons(data) {
         telegramBtn.style.display = 'none';
     }
 
+    const planBtn = document.getElementById('plan-alimentacion-btn');
+    if (data.enlace_plan_alimentacion && data.enlace_plan_alimentacion.trim() !== '') {
+        planBtn.href = data.enlace_plan_alimentacion;
+        planBtn.style.display = 'block'; // Asegurarse de que sea visible
+    } else {
+        planBtn.style.display = 'none'; // Ocultarlo si no hay enlace
+    }
+    // --- FIN DEL BLOQUE AÑADIDO ---
+
+    // ... (código existente para el botón de guardar imagen) ...
+    }
+
     document.getElementById('save-image-btn').addEventListener('click', () => {
         html2canvas(document.getElementById('app-content'), { useCORS: true, backgroundColor: '#f0f4f8' }).then(canvas => {
             const link = document.createElement('a');
