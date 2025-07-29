@@ -79,6 +79,8 @@ function displayPatientInfo(data) {
     if (data.indicaciones_medico && data.indicaciones_medico.trim() !== '') {
         indicationsP.textContent = data.indicaciones_medico;
         indicationsSection.style.display = 'block';
+    } else {
+        indicationsSection.style.display = 'none';
     }
 
     document.getElementById('patient-age').textContent = calculateAge(data.fecha_nacimiento);
@@ -286,14 +288,14 @@ function setupDynamicEventListeners() {
 
 function setupActionButtons(data) {
     const expedienteBtn = document.getElementById('expediente-btn');
-    if (data.enlace_expediente) {
+    if (data.enlace_expediente && data.enlace_expediente.trim() !== '') {
         expedienteBtn.href = data.enlace_expediente;
     } else {
         expedienteBtn.style.display = 'none';
     }
 
     const telegramBtn = document.getElementById('telegram-btn');
-    if (data.enlace_telegram) {
+    if (data.enlace_telegram && data.enlace_telegram.trim() !== '') {
         telegramBtn.href = data.enlace_telegram;
     } else {
         telegramBtn.style.display = 'none';
@@ -302,13 +304,8 @@ function setupActionButtons(data) {
     const planBtn = document.getElementById('plan-alimentacion-btn');
     if (data.enlace_plan_alimentacion && data.enlace_plan_alimentacion.trim() !== '') {
         planBtn.href = data.enlace_plan_alimentacion;
-        planBtn.style.display = 'block'; // Asegurarse de que sea visible
     } else {
-        planBtn.style.display = 'none'; // Ocultarlo si no hay enlace
-    }
-    // --- FIN DEL BLOQUE AÑADIDO ---
-
-    // ... (código existente para el botón de guardar imagen) ...
+        planBtn.style.display = 'none';
     }
 
     document.getElementById('save-image-btn').addEventListener('click', () => {
@@ -337,10 +334,14 @@ function setupLogoutButton() {
 document.addEventListener('DOMContentLoaded', () => {
     // Revisa en qué página estamos y ejecuta la función correspondiente
     if (document.querySelector('.page')) { 
-        populateRecetaPage();
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js';
+        script.onload = () => {
+            populateRecetaPage();
+        };
+        document.head.appendChild(script);
     } 
     else if (document.getElementById('app-content')) { 
-        // Carga PapaParse y luego los datos del paciente
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js';
         script.onload = () => {
