@@ -298,33 +298,72 @@ input[id^="status_suspended"]:checked ~ label[for^="status_suspended"] {
     background-color: #fff5f5;
 }
 
-/* Botones de Acción */
+/* =========================================
+   NUEVO DISEÑO DE BOTONES (ELEGANTE Y PROFESIONAL)
+   ========================================= */
+
+/* Estructura de la cuadrícula de botones */
 .button-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 12px; /* Un poco menos de espacio */
 }
+
+/* Estilo base para todos los botones de acción */
 .action-button {
     display: block;
     text-decoration: none;
-    background-color: var(--secondary-color);
+    background-color: var(--primary-color); /* Color azul oscuro profesional como base */
     color: white;
     padding: 15px;
     text-align: center;
-    border-radius: var(--border-radius);
+    border-radius: 10px; /* Esquinas más suaves */
     border: none;
     font-size: 1em;
-    font-weight: 600;
+    font-weight: 600; /* Letra semi-negrita */
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.2s ease-in-out; /* Transición suave para todos los efectos */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para dar profundidad */
 }
+
+/* Efecto al pasar el cursor por encima */
 .action-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    transform: translateY(-3px); /* Eleva el botón ligeramente */
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
+    filter: brightness(1.1); /* Aumenta ligeramente el brillo */
 }
-.action-button.urgency { background-color: var(--danger-color); }
-.action-button.payment { background-color: var(--success-color); }
-#expediente-btn { background-color: #4a4e69; }
+
+/* Colores específicos para botones especiales */
+.action-button.urgency {
+    background-color: #c1121f; /* Un rojo más sobrio */
+}
+
+.action-button.payment {
+    background-color: var(--success-color); /* Mantenemos el verde de éxito */
+}
+
+/* Estilo para botones de información (secundarios) */
+#expediente-btn,
+#telegram-btn,
+#plan-alimentacion-btn,
+#logout-btn {
+    background-color: #6c757d; /* Un gris neutro y profesional */
+}
+
+/* Estilo para botones de herramientas */
+#save-image-btn,
+[href="receta.html"],
+[href="sintomas.html"] {
+    background-color: var(--secondary-color); /* Verde azulado para acciones de la app */
+}
+
+/* Adaptación para móviles */
+@media (max-width: 768px) {
+    .button-grid {
+        grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
+    }
+}
+
 
 /* Footer */
 .app-footer {
