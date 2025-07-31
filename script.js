@@ -1,9 +1,6 @@
 // script.js (Versión Final Corregida)
 
-// URL de la base de datos en Google Sheets
 const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCh0jOiaAGNdoytpJ1sU8W-tJHO6ef1Mmgu4JpMA7oU3KvAvWNmioFlLJ4XzHH_Tgk1-wPAvpw7YaM/pub?gid=0&single=true&output=csv';
-
-// --- FUNCIONES PRINCIPALES DE CARGA Y VISUALIZACIÓN ---
 
 async function fetchData() {
     try {
@@ -41,46 +38,43 @@ async function loadPatientData() {
         setupActionButtons(patientData);
         setupDynamicEventListeners();
         setupLogoutButton();
-
-        document.getElementById('patient-info').style.display = 'block';
-        document.getElementById('diagnosis-section').style.display = 'block';
     } else {
         loader.textContent = `Código "${patientCode}" no encontrado. Verifica que sea correcto.`;
     }
 }
 
 function displayPatientInfo(data) {
-    document.getElementById('patient-name').textContent = data.nombre_completo || 'N/A';
-    document.getElementById('patient-dob').textContent = data.fecha_nacimiento || 'N/A';
-    document.getElementById('patient-weight').textContent = `${data.peso_kg || 'N/A'} kg`;
-    document.getElementById('patient-diagnosis').textContent = data.diagnostico || 'No especificado.';
+    const infoSection = document.getElementById('patient-info');
+    infoSection.innerHTML = `
+        <h2 id="patient-name">${data.nombre_completo || 'N/A'}</h2>
+        <p><strong>Fecha de Nacimiento:</strong> <span id="patient-dob">${data.fecha_nacimiento || 'N/A'}</span></p>
+        <p><strong>Edad:</strong> <span id="patient-age">${calculateAge(data.fecha_nacimiento)}</span></p>
+        <p><strong>Peso:</strong> <span id="patient-weight">${data.peso_kg || 'N/A'} kg</span></p>
+        <p><strong>Fecha Actual:</strong> <span id="current-date">${new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</span></p>
+        <p id="patient-allergies" class="allergies" style="display: ${data.alergias ? 'block' : 'none'}">${data.alergias ? `ALERGIAS: ${data.alergias}` : ''}</p>
+    `;
+    infoSection.style.display = 'block';
 
-    if (data.alergias && data.alergias.trim() !== '') {
-        document.getElementById('patient-allergies').textContent = `ALERGIAS: ${data.alergias}`;
-    } else {
-        document.getElementById('patient-allergies').style.display = 'none';
-    }
+    const diagnosisSection = document.getElementById('diagnosis-section');
+    diagnosisSection.innerHTML = `<h3>Diagnóstico</h3><p id="patient-diagnosis">${data.diagnostico || 'No especificado.'}</p>`;
+    diagnosisSection.style.display = 'block';
 
     const indicationsSection = document.getElementById('doctor-indications-section');
     if (data.indicaciones_medico && data.indicaciones_medico.trim() !== '') {
-        document.getElementById('doctor-indications').textContent = data.indicaciones_medico;
+        indicationsSection.innerHTML = `<h3>Indicaciones de tu Médico</h3><p id="doctor-indications">${data.indicaciones_medico}</p>`;
         indicationsSection.style.display = 'block';
     } else {
         indicationsSection.style.display = 'none';
     }
-
-    document.getElementById('patient-age').textContent = calculateAge(data.fecha_nacimiento);
-    document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
 function displayMedications(data) {
     const container = document.getElementById('medication-list');
     const patientCode = localStorage.getItem('patientCode');
-    
     let allMedicationsHTML = [];
     let medicationCount = 0;
 
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 15; i++) { // Aumentado a 15 por si acaso
         if (data[`med${i}_generico`] && data[`med${i}_generico`].trim() !== '') {
             medicationCount++;
             const medId = `med${i}`;
@@ -101,88 +95,60 @@ function displayMedications(data) {
             let scheduleHTML = '';
             const frequencyString = med.frecuencia || '';
             const match = frequencyString.match(/(\d+)/);
-            let numberOfInputs = 0;
             if (match) {
                 const hours = parseInt(match[1], 10);
-                if (hours > 0 && hours < 24) {
-                    numberOfInputs = Math.floor(24 / hours);
-                } else if (hours === 24) {
-                    numberOfInputs = 1;
+                const numberOfInputs = (hours > 0 && hours < 24) ? Math.floor(24 / hours) : (hours >= 24 ? 1 : 0);
+                if (numberOfInputs > 0) {
+                    const savedSchedule = JSON.parse(localStorage.getItem(`${patientCode}_${medId}_schedule`)) || {};
+                    let timeInputsHTML = '';
+                    for (let j = 0; j < numberOfInputs; j++) {
+                        timeInputsHTML += `<input type="time" class="time-input" data-index="${j}" value="${savedSchedule[j] || ''}">`;
+                    }
+                    scheduleHTML = `<div class="schedule-container"><strong>Horarios de administración:</strong><div class="time-inputs-grid">${timeInputsHTML}</div></div>`;
                 }
-            }
-            
-            if (numberOfInputs > 0) {
-                const savedSchedule = JSON.parse(localStorage.getItem(`${patientCode}_${medId}_schedule`)) || {};
-                let timeInputsHTML = '';
-                for (let j = 0; j < numberOfInputs; j++) {
-                    const savedTime = savedSchedule[j] || '';
-                    timeInputsHTML += `<input type="time" class="time-input" data-index="${j}" value="${savedTime}">`;
-                }
-                scheduleHTML = `<div class="schedule-container"><strong>Horarios de administración:</strong><div class="time-inputs-grid">${timeInputsHTML}</div></div>`;
             }
 
             const savedProgress = JSON.parse(localStorage.getItem(`${patientCode}_${medId}_progress`)) || {};
-            const savedStatus = localStorage.getItem(`${patientCode}_${medId}_status`);
-            
-            let progressChecksHTML = '';
             const duration = parseInt(med.duracion) || 0;
+            let progressChecksHTML = '';
             for (let day = 1; day <= duration; day++) {
-                const isChecked = savedProgress[day] ? 'checked' : '';
-                progressChecksHTML += `<label><input type="checkbox" data-day="${day}" ${isChecked}><span>${day}</span></label>`;
+                progressChecksHTML += `<label><input type="checkbox" data-day="${day}" ${savedProgress[day] ? 'checked' : ''}><span>${day}</span></label>`;
             }
 
-            const isFinished = savedStatus === 'finished' ? 'checked' : '';
-            const isSuspended = savedStatus === 'suspended' ? 'checked' : '';
+            const savedStatus = localStorage.getItem(`${patientCode}_${medId}_status`);
             const cardStatusClass = savedStatus ? `status-${savedStatus}` : '';
 
             const medicationHTML = `
                 <article class="medication-item card ${cardStatusClass}" id="${medId}">
                     <div class="medication-header"><h4>${med.generico} (${med.comercial || 'N/A'})</h4><small>Indicado el: ${med.fecha_indicacion || 'N/A'}</small></div>
-                    <div class="medication-details">
-                        <p><strong>Presentación:</strong> ${med.presentacion || 'N/A'}</p><p><strong>Concentración:</strong> ${med.concentracion || 'N/A'}</p>
-                        <p><strong>Surtir:</strong> ${med.surtir || 'N/A'}</p><p><strong>Vía:</strong> ${med.via || 'N/A'}</p>
-                        <p><strong>Dosis:</strong> ${med.dosis || 'N/A'}</p><p><strong>Frecuencia:</strong> ${med.frecuencia || 'N/A'}</p>
-                    </div>
-                    <p><strong>Duración:</strong> ${med.duracion || 'N/A'} días</p><p><strong>Indicaciones Especiales:</strong> ${med.indicaciones || 'Ninguna'}</p>
+                    <div class="medication-details"><p><strong>Presentación:</strong> ${med.presentacion||'N/A'}</p><p><strong>Concentración:</strong> ${med.concentracion||'N/A'}</p><p><strong>Surtir:</strong> ${med.surtir||'N/A'}</p><p><strong>Vía:</strong> ${med.via||'N/A'}</p><p><strong>Dosis:</strong> ${med.dosis||'N/A'}</p><p><strong>Frecuencia:</strong> ${med.frecuencia||'N/A'}</p></div>
+                    <p><strong>Duración:</strong> ${med.duracion||'N/A'} días</p><p><strong>Indicaciones Especiales:</strong> ${med.indicaciones||'Ninguna'}</p>
                     ${scheduleHTML}
                     <div class="progress-tracker"><strong>Avance del tratamiento (días):</strong><div class="progress-checks">${progressChecksHTML}</div></div>
-                    <div class="treatment-status">
-                        <strong>Estado del Tratamiento:</strong>
-                        <input type="radio" name="status_${medId}" id="status_finished_${i}" value="finished" ${isFinished}><label for="status_finished_${i}">✅ Terminado</label>
-                        <input type="radio" name="status_${medId}" id="status_suspended_${i}" value="suspended" ${isSuspended}><label for="status_suspended_${i}">❌ Suspendido</label>
-                    </div>
-                </article>
-            `;
+                    <div class="treatment-status"><strong>Estado del Tratamiento:</strong><input type="radio" name="status_${medId}" id="status_finished_${i}" value="finished" ${savedStatus === 'finished' ? 'checked' : ''}><label for="status_finished_${i}">✅ Terminado</label><input type="radio" name="status_${medId}" id="status_suspended_${i}" value="suspended" ${savedStatus === 'suspended' ? 'checked' : ''}><label for="status_suspended_${i}">❌ Suspendido</label></div>
+                </article>`;
             allMedicationsHTML.push(medicationHTML);
         }
     }
 
-    if (medicationCount === 0) {
-        container.innerHTML = `<div class="card"><p>No hay medicamentos indicados por el momento.</p></div>`;
-    } else {
-        container.innerHTML = allMedicationsHTML.join('');
-    }
+    container.innerHTML = (medicationCount > 0) ? allMedicationsHTML.join('') : `<div class="card"><p>No hay medicamentos indicados por el momento.</p></div>`;
 }
 
 async function populateRecetaPage() {
     const patientCode = localStorage.getItem('patientCode');
     if (!patientCode) { document.body.innerHTML = 'Error: Código de paciente no encontrado.'; return; }
-
     const data = await fetchData();
     if (!data) { document.body.innerHTML = 'Error al cargar los datos.'; return; }
-
     const patientData = data.find(row => row.codigo_unico && row.codigo_unico.trim().toUpperCase() === patientCode);
-
     if (patientData) {
         document.getElementById('receta-paciente').textContent = patientData.nombre_completo || '';
         document.getElementById('receta-dob').textContent = patientData.fecha_nacimiento || '';
         document.getElementById('receta-diagnostico').textContent = patientData.diagnostico || 'No especificado.';
         document.getElementById('receta-fecha').textContent = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
-
         const medList = document.getElementById('receta-medicamentos');
         medList.innerHTML = '';
         let medCount = 0;
-        for (let i = 1; i <= 10; i++) {
+        for (let i = 1; i <= 15; i++) {
             if (patientData[`med${i}_generico`] && patientData[`med${i}_generico`].trim() !== '') {
                 medCount++;
                 const medItem = document.createElement('li');
@@ -191,24 +157,19 @@ async function populateRecetaPage() {
             }
         }
         if (medCount === 0) { medList.innerHTML = '<li>No hay medicamentos indicados.</li>'; }
-    } else {
-        document.body.innerHTML = `Error: Paciente con código "${patientCode}" no encontrado.`;
-    }
+    } else { document.body.innerHTML = `Error: Paciente con código "${patientCode}" no encontrado.`; }
 }
 
-// --- FUNCIONES DE CONFIGURACIÓN Y UTILIDADES ---
-
 function calculateAge(dobString) {
-    if (!dobString || typeof dobString !== 'string') return 'Fecha no proporcionada.';
-    const cleanedDobString = dobString.trim();
-    const parts = cleanedDobString.split(/[/|-]/);
-    if (parts.length !== 3) return 'Formato de fecha inválido.';
+    if (!dobString) return 'Fecha no proporcionada.';
+    const parts = dobString.trim().split(/[/|-]/);
+    if (parts.length !== 3) return 'Formato inválido.';
     const day = parseInt(parts[0], 10), month = parseInt(parts[1], 10) - 1, year = parseInt(parts[2], 10);
-    if (isNaN(day) || isNaN(month) || isNaN(year)) return 'Fecha contiene caracteres no válidos.';
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return 'Caracteres no válidos.';
     const dob = new Date(year, month, day);
-    if (dob.getFullYear() !== year || dob.getMonth() !== month || dob.getDate() !== day) return "La fecha no existe.";
+    if (dob.getFullYear() !== year || dob.getMonth() !== month || dob.getDate() !== day) return "Fecha inexistente.";
     const today = new Date();
-    if (dob > today) return "Fecha de nacimiento en el futuro.";
+    if (dob > today) return "Fecha en el futuro.";
     let ageYears = today.getFullYear() - dob.getFullYear(), ageMonths = today.getMonth() - dob.getMonth(), ageDays = today.getDate() - dob.getDate();
     if (ageDays < 0) { ageMonths--; ageDays += new Date(today.getFullYear(), today.getMonth(), 0).getDate(); }
     if (ageMonths < 0) { ageYears--; ageMonths += 12; }
@@ -219,43 +180,33 @@ function setupDynamicEventListeners() {
     const medList = document.getElementById('medication-list');
     const patientCode = localStorage.getItem('patientCode');
     if (!medList || !patientCode) return;
-
     medList.addEventListener('change', function(event) {
         const medicationCard = event.target.closest('.medication-item');
         if (!medicationCard) return;
         const medId = medicationCard.id;
-
         if (event.target.type === 'checkbox') {
-            const day = event.target.dataset.day;
-            const progressKey = `${patientCode}_${medId}_progress`;
-            const savedProgress = JSON.parse(localStorage.getItem(progressKey)) || {};
-            savedProgress[day] = event.target.checked;
-            localStorage.setItem(progressKey, JSON.stringify(savedProgress));
-        }
-
-        if (event.target.type === 'radio' && event.target.name.startsWith('status_')) {
-            const statusKey = `${patientCode}_${medId}_status`;
-            localStorage.setItem(statusKey, event.target.value);
+            const day = event.target.dataset.day, key = `${patientCode}_${medId}_progress`, data = JSON.parse(localStorage.getItem(key)) || {};
+            data[day] = event.target.checked;
+            localStorage.setItem(key, JSON.stringify(data));
+        } else if (event.target.type === 'radio') {
+            const key = `${patientCode}_${medId}_status`;
+            localStorage.setItem(key, event.target.value);
             medicationCard.classList.remove('status-finished', 'status-suspended');
             if (event.target.checked) { medicationCard.classList.add(`status-${event.target.value}`); }
-        }
-        
-        if (event.target.classList.contains('time-input')) {
-            const index = event.target.dataset.index;
-            const scheduleKey = `${patientCode}_${medId}_schedule`;
-            const savedSchedule = JSON.parse(localStorage.getItem(scheduleKey)) || {};
-            savedSchedule[index] = event.target.value;
-            localStorage.setItem(scheduleKey, JSON.stringify(savedSchedule));
+        } else if (event.target.classList.contains('time-input')) {
+            const index = event.target.dataset.index, key = `${patientCode}_${medId}_schedule`, data = JSON.parse(localStorage.getItem(key)) || {};
+            data[index] = event.target.value;
+            localStorage.setItem(key, JSON.stringify(data));
         }
     });
 }
 
 function setupActionButtons(data) {
-    // Función para manejar cada botón y evitar repetición de código
     const configureButton = (id, linkData) => {
         const button = document.getElementById(id);
         if (button) {
-            if (linkData && linkData.trim() !== '') {
+            // Comprobación más segura: verifica que linkData sea una cadena no vacía
+            if (typeof linkData === 'string' && linkData.trim() !== '') {
                 button.href = linkData;
                 button.style.display = 'block';
             } else {
@@ -263,11 +214,9 @@ function setupActionButtons(data) {
             }
         }
     };
-
     configureButton('expediente-btn', data.enlace_expediente);
     configureButton('telegram-btn', data.enlace_telegram);
     configureButton('plan-alimentacion-btn', data.enlace_plan_alimentacion);
-
     document.getElementById('save-image-btn').addEventListener('click', () => {
         html2canvas(document.getElementById('app-content'), { useCORS: true, backgroundColor: '#f0f4f8' }).then(canvas => {
             const link = document.createElement('a');
@@ -288,20 +237,19 @@ function setupLogoutButton() {
     }
 }
 
-// --- PUNTO DE ENTRADA PRINCIPAL DE LA APP ---
-
+// --- PUNTO DE ENTRADA PRINCIPAL ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Si la librería PapaParse ya está cargada, ejecuta la lógica.
-    // Esto es más simple y robusto que la carga dinámica de scripts.
     if (typeof Papa === 'undefined') {
-        console.error('PapaParse no está cargado. Asegúrate de incluir el script en tu HTML.');
+        console.error('La librería PapaParse no está cargada.');
+        if (document.getElementById('loader')) {
+            document.getElementById('loader').textContent = "Error de configuración. Contacte al administrador.";
+        }
         return;
     }
 
-    if (document.querySelector('.page')) { 
+    if (document.querySelector('.page')) { // En receta.html
         populateRecetaPage();
-    } 
-    else if (document.getElementById('app-content')) { 
+    } else if (document.getElementById('app-content')) { // En app.html
         loadPatientData();
     }
 });
