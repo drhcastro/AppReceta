@@ -45,14 +45,21 @@ async function loadPatientData() {
 
 function displayPatientInfo(data) {
     const infoSection = document.getElementById('patient-info');
+    // Restauramos la estructura HTML original con sus clases y IDs
     infoSection.innerHTML = `
         <h2 id="patient-name">${data.nombre_completo || 'N/A'}</h2>
         <p><strong>Fecha de Nacimiento:</strong> <span id="patient-dob">${data.fecha_nacimiento || 'N/A'}</span></p>
         <p><strong>Edad:</strong> <span id="patient-age">${calculateAge(data.fecha_nacimiento)}</span></p>
         <p><strong>Peso:</strong> <span id="patient-weight">${data.peso_kg || 'N/A'} kg</span></p>
         <p><strong>Fecha Actual:</strong> <span id="current-date">${new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</span></p>
-        <p id="patient-allergies" class="allergies" style="display: ${data.alergias ? 'block' : 'none'}">${data.alergias ? `ALERGIAS: ${data.alergias}` : ''}</p>
+        <p id="patient-allergies" class="allergies" style="display: none;"></p>
     `;
+    // Llenamos el campo de alergias solo si existe
+    if (data.alergias && data.alergias.trim() !== '') {
+        const allergiesP = infoSection.querySelector('#patient-allergies');
+        allergiesP.textContent = `ALERGIAS: ${data.alergias}`;
+        allergiesP.style.display = 'block';
+    }
     infoSection.style.display = 'block';
 
     const diagnosisSection = document.getElementById('diagnosis-section');
