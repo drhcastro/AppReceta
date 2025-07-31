@@ -3,50 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bienvenido a AppReceta ©️</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="AppReceta">
-<link rel="apple-touch-icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png">
+    <title>Bienvenido a AppReceta</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png" type="image/png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AppReceta">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png">
 </head>
-<body>
+<body class="login-page">
+
     <div class="login-container">
         <img src="https://i.ibb.co/ns9sT96c/Logo-julio-20250712-140428-0000.png" alt="Logo AppReceta" class="logo">
-        <h1>AppReceta ©️</h1>
+        <h1>AppReceta</h1>
         <p>Ingresa tu código de paciente para continuar</p>
         <form id="loginForm">
             <input type="text" id="patientCode" placeholder="Código Único" required>
             <button type="submit">Acceder</button>
         </form>
-        <p id="errorMessage" class="error-message"></p>
+        <p id="errorMessage" class="error-message" style="display: none;"></p>
     </div>
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const code = document.getElementById('patientCode').value.trim().toUpperCase();
+            const errorMessage = document.getElementById('errorMessage');
+            
             if (code) {
-                // Guardamos el código en el almacenamiento local para usarlo en la siguiente página
+                // Simulación de carga para que el usuario vea que algo pasa
+                const button = event.target.querySelector('button');
+                button.textContent = 'Verificando...';
+                button.disabled = true;
+
+                // Guardamos el código y redirigimos
                 localStorage.setItem('patientCode', code);
                 window.location.href = 'app.html';
+            } else {
+                errorMessage.textContent = 'Por favor, ingresa un código.';
+                errorMessage.style.display = 'block';
             }
         });
-    </script>
-        <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/AppReceta/sw.js') // ¡IMPORTANTE! Usa el nombre de tu repositorio
-                    .then(registration => {
-                        console.log('Service Worker registrado con éxito:', registration);
-                    })
-                    .catch(error => {
-                        console.log('Error al registrar el Service Worker:', error);
-                    });
-            });
-        }
     </script>
 </body>
 </html>
