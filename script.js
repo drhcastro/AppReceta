@@ -2,6 +2,8 @@
 
 const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCh0jOiaAGNdoytpJ1sU8W-tJHO6ef1Mmgu4JpMA7oU3KvAvWNmioFlLJ4XzHH_Tgk1-wPAvpw7YaM/pub?gid=0&single=true&output=csv';
 
+// --- FUNCIONES PRINCIPALES DE CARGA Y VISUALIZACIÓN ---
+
 async function fetchData() {
     try {
         const response = await fetch(GOOGLE_SHEET_URL);
@@ -45,7 +47,6 @@ async function loadPatientData() {
 
 function displayPatientInfo(data) {
     const infoSection = document.getElementById('patient-info');
-    // Restauramos la estructura HTML original con sus clases y IDs
     infoSection.innerHTML = `
         <h2 id="patient-name">${data.nombre_completo || 'N/A'}</h2>
         <p><strong>Fecha de Nacimiento:</strong> <span id="patient-dob">${data.fecha_nacimiento || 'N/A'}</span></p>
@@ -54,7 +55,7 @@ function displayPatientInfo(data) {
         <p><strong>Fecha Actual:</strong> <span id="current-date">${new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</span></p>
         <p id="patient-allergies" class="allergies" style="display: none;"></p>
     `;
-    // Llenamos el campo de alergias solo si existe
+
     if (data.alergias && data.alergias.trim() !== '') {
         const allergiesP = infoSection.querySelector('#patient-allergies');
         allergiesP.textContent = `ALERGIAS: ${data.alergias}`;
@@ -63,12 +64,12 @@ function displayPatientInfo(data) {
     infoSection.style.display = 'block';
 
     const diagnosisSection = document.getElementById('diagnosis-section');
-    diagnosisSection.innerHTML = `<h3>Diagnóstico</h3><p id="patient-diagnosis">${data.diagnostico || 'No especificado.'}</p>`;
+    diagnosisSection.innerHTML = `<h3>Diagnóstico</h3><p>${data.diagnostico || 'No especificado.'}</p>`;
     diagnosisSection.style.display = 'block';
 
     const indicationsSection = document.getElementById('doctor-indications-section');
     if (data.indicaciones_medico && data.indicaciones_medico.trim() !== '') {
-        indicationsSection.innerHTML = `<h3>Indicaciones de tu Médico</h3><p id="doctor-indications">${data.indicaciones_medico}</p>`;
+        indicationsSection.innerHTML = `<h3>Indicaciones de tu Médico</h3><p>${data.indicaciones_medico}</p>`;
         indicationsSection.style.display = 'block';
     } else {
         indicationsSection.style.display = 'none';
@@ -81,7 +82,7 @@ function displayMedications(data) {
     let allMedicationsHTML = [];
     let medicationCount = 0;
 
-    for (let i = 1; i <= 15; i++) { // Aumentado a 15 por si acaso
+    for (let i = 1; i <= 15; i++) {
         if (data[`med${i}_generico`] && data[`med${i}_generico`].trim() !== '') {
             medicationCount++;
             const medId = `med${i}`;
@@ -212,7 +213,6 @@ function setupActionButtons(data) {
     const configureButton = (id, linkData) => {
         const button = document.getElementById(id);
         if (button) {
-            // Comprobación más segura: verifica que linkData sea una cadena no vacía
             if (typeof linkData === 'string' && linkData.trim() !== '') {
                 button.href = linkData;
                 button.style.display = 'block';
