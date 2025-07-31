@@ -335,7 +335,7 @@ input[id^="status_suspended"]:checked ~ label[for^="status_suspended"] {
 
 /* Colores específicos para botones especiales */
 .action-button.urgency {
-    background-color: #c1121f; /* Un rojo más sobrio */
+    background-color: #b82e3d; /* Un rojo más sobrio */
 }
 
 .action-button.payment {
