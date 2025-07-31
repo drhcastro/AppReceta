@@ -29,18 +29,13 @@
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const code = document.getElementById('patientCode').value.trim().toUpperCase();
-            const errorMessage = document.getElementById('errorMessage');
             
             if (code) {
-                // Simulación de carga para que el usuario vea que algo pasa
-                const button = event.target.querySelector('button');
-                button.textContent = 'Verificando...';
-                button.disabled = true;
-
-                // Guardamos el código y redirigimos
+                // Simplemente guarda el código y redirige.
                 localStorage.setItem('patientCode', code);
                 window.location.href = 'app.html';
             } else {
+                const errorMessage = document.getElementById('errorMessage');
                 errorMessage.textContent = 'Por favor, ingresa un código.';
                 errorMessage.style.display = 'block';
             }
