@@ -1,74 +1,61 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-g">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma Pediátrica - CIMA Nahui</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="inicio-style.css">
+    <title>Bienvenido a AppReceta</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png" type="image/png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AppReceta">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png">
 </head>
-<body>
+<body class="login-page">
 
-<div class="portal-container">
-    <header class="portal-header">
-        <h1>Plataforma de Seguimiento Pediátrico</h1>
-        <div id="user-welcome" style="font-size: 1rem; margin-top: 1rem;">
-            <span>Cargando...</span> | <a href="#" id="logout-btn" style="color: var(--primary-color);">Cerrar Sesión</a>
-        </div>
-    </header>
+    <div class="login-container">
+        <img src="https://i.ibb.co/ns9sT96c/Logo-julio-20250712-140428-0000.png" alt="Logo AppReceta" class="logo">
+        <h1>AppReceta</h1>
+        <p>Ingresa tu código de paciente para continuar</p>
+        <form id="loginForm">
+            <input type="text" id="patientCode" placeholder="Código Único" required>
+            <button type="submit">Acceder</button>
+        </form>
+        <p id="errorMessage" class="error-message" style="display: none;"></p>
+    </div>
 
-    <main class="portal-actions">
-        <a href="registro.html" class="action-card">
-            <div class="icon">📝</div>
-            <h2>Registrar Nuevo Paciente</h2>
-            <p>Crear un nuevo expediente clínico completo.</p>
-        </a>
-        <a href="buscar.html" class="action-card">
-            <div class="icon">📂</div>
-            <h2>Ver Paciente Registrado</h2>
-            <p>Buscar un expediente existente por nombre o código.</p>
-        </a>
-        <a href="graficas.html" class="action-card">
-            <div class="icon">📊</div>
-            <h2>Usar Sin Registro</h2>
-            <p>Acceder a las herramientas de cálculo y gráficas de forma rápida.</p>
-        </a>
-    </main>
-
-    <footer class="portal-footer">
-        <p>&copy; 2025 CIMA Nahui de Occidente. Todos los derechos reservados.</p>
-    </footer>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="auth-guard.js"></script>
-
-<script>
-    // SCRIPT SIMPLIFICADO: Se eliminó la lógica del prompt
-    document.addEventListener('DOMContentLoaded', () => {
-        const logoutBtn = document.getElementById('logout-btn');
-        const userWelcome = document.getElementById('user-welcome');
-        
-        setTimeout(() => {
-            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-            if (currentUser) {
-                userWelcome.querySelector('span').textContent = `Bienvenido(a), ${currentUser.fullName}`;
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const code = document.getElementById('patientCode').value.trim().toUpperCase();
+            
+            if (code) {
+                localStorage.setItem('patientCode', code);
+                window.location.href = 'app.html';
+            } else {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = 'Por favor, ingresa un código.';
+                errorMessage.style.display = 'block';
             }
-        }, 500);
-
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            firebase.auth().signOut().then(() => {
-                sessionStorage.removeItem('currentUser');
-                window.location.href = 'login.html';
-            });
         });
-    });
-</script>
+    </script>
 
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado con éxito.');
+                    })
+                    .catch(error => {
+                        console.log('Error al registrar el Service Worker:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
