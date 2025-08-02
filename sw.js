@@ -1,21 +1,24 @@
-// sw.js - Service Worker Básico
+// sw.js (Service Worker)
 
-const CACHE_NAME = 'appreceta-cache-v1';
-// Lista de archivos que se guardarán en caché para que la app funcione sin conexión
+const CACHE_NAME = 'appreceta-cache-v3'; // Incrementamos la versión para forzar la actualización
+// Lista de todos los archivos de nuestra app
 const urlsToCache = [
   '/',
   'index.html',
   'app.html',
-  'urgencia.html',
+  'sintomas.html',
+  'receta.html',
   'pago.html',
+  'urgencia.html',
   'style.css',
   'script.js',
+  'sintomas.js',
   'manifest.json',
-  'https://i.ibb.co/ns9sT96c/Logo-julio-20250712-140428-0000.png',
-  'https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png'
+  'https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png',
+  'https://i.ibb.co/ns9sT96c/Logo-julio-20250712-140428-0000.png'
 ];
 
-// Evento 'install': Se dispara cuando el Service Worker se instala
+// Evento 'install': Guarda los archivos en caché
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -26,14 +29,28 @@ self.addEventListener('install', event => {
   );
 });
 
-// Evento 'fetch': Se dispara cada vez que la app pide un recurso (imagen, script, etc.)
+// Evento 'fetch': Responde con los archivos en caché cuando no hay conexión
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Si el recurso está en caché, lo devuelve. Si no, lo busca en la red.
         return response || fetch(event.request);
-      }
-    )
+      })
+  );
+});
+
+// Evento 'activate': Limpia cachés antiguos
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
 });
