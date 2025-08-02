@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bienvenido a AppReceta</title>
+    
     <link rel="stylesheet" href="style.css">
+    
     <link rel="manifest" href="manifest.json">
+    
     <link rel="icon" href="https://i.ibb.co/ksDjwNyb/20250711-225539-0000.png" type="image/png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -31,7 +34,6 @@
             const code = document.getElementById('patientCode').value.trim().toUpperCase();
             
             if (code) {
-                // Simplemente guarda el código y redirige.
                 localStorage.setItem('patientCode', code);
                 window.location.href = 'app.html';
             } else {
@@ -40,6 +42,20 @@
                 errorMessage.style.display = 'block';
             }
         });
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado con éxito.');
+                    })
+                    .catch(error => {
+                        console.log('Error al registrar el Service Worker:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
